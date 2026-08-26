@@ -4,13 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       headline:
-        description: 'One-line highlight prepended to the changelog (optional)'
-        required: false
-        default: ''
+        description: 'Changelog headline (EN, one line per feature; shown outside the quote)'
+        required: true
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 jobs:
   build:
@@ -29,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -197,3 +198,12 @@ jobs:
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release
+      - name: Bump build number
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          CURRENT: ${{ vars.TURBO_BUILD_NUMBER }}
+          REPO: ${{ github.repository }}
+        run: |
+          NEXT=$((CURRENT + 1))
+          gh api -X PATCH "repos/$REPO/actions/variables/TURBO_BUILD_NUMBER" -f name=TURBO_BUILD_NUMBER -f value="$NEXT"
+          echo "TURBO_BUILD_NUMBER -> $NEXT"
