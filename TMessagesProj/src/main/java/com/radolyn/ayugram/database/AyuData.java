@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 
 import tw.nekomimi.nekogram.helpers.AppRestartHelper;
-import tw.nekomimi.nekogram.settings.NekoExperimentalSettingsActivity;
 import tw.nekomimi.nekogram.utils.AndroidUtil;
 
 public class AyuData {
@@ -305,12 +304,12 @@ public class AyuData {
         return size;
     }
 
-    public static void loadSizes(NekoExperimentalSettingsActivity bf) {
+    public static void loadSizes(Runnable refresh) {
         Utilities.globalQueue.postRunnable(() -> {
             dbSize = getDatabaseSize();
             attachmentsSize = getAttachmentsDirSize();
             totalSize = dbSize + attachmentsSize;
-            AndroidUtilities.runOnUIThread(bf::refreshAyuDataSize, 500);
+            AndroidUtilities.runOnUIThread(refresh, 500);
         });
     }
 }

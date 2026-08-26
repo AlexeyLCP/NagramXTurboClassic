@@ -13,9 +13,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -28,13 +26,10 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UnifiedPushService;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.FileLog;
-import org.telegram.ui.Cells.TextCell;
-import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.SimpleTextView;
-import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.ItemOptions;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.UndoView;
@@ -44,10 +39,8 @@ import java.io.File;
 import java.util.Locale;
 
 import tw.nekomimi.nekogram.NekoConfig;
-import tw.nekomimi.nekogram.helpers.TypefaceHelper;
 import tw.nekomimi.nekogram.config.CellGroup;
 import tw.nekomimi.nekogram.config.cell.AbstractConfigCell;
-import tw.nekomimi.nekogram.config.cell.ConfigCellCustom;
 import tw.nekomimi.nekogram.config.cell.ConfigCellDivider;
 import tw.nekomimi.nekogram.config.cell.ConfigCellHeader;
 import tw.nekomimi.nekogram.config.cell.ConfigCellSelectBox;
@@ -182,16 +175,6 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell mediaPreviewRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.mediaPreview));
     private final AbstractConfigCell dividerDialogs = cellGroup.appendCell(new ConfigCellDivider());
 
-    // Fonts
-    private final AbstractConfigCell headerFonts = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.FontsSettings)));
-    private final AbstractConfigCell typefaceRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.typeface));
-    private final AbstractConfigCell fontRegularRow = cellGroup.appendCell(new ConfigCellCustom("FontRegular", ConfigCellCustom.CUSTOM_ITEM_FontRegular, true));
-    private final AbstractConfigCell fontBoldRow = cellGroup.appendCell(new ConfigCellCustom("FontBold", ConfigCellCustom.CUSTOM_ITEM_FontBold, true));
-    private final AbstractConfigCell fontItalicRow = cellGroup.appendCell(new ConfigCellCustom("FontItalic", ConfigCellCustom.CUSTOM_ITEM_FontItalic, true));
-    private final AbstractConfigCell fontMonoRow = cellGroup.appendCell(new ConfigCellCustom("FontMono", ConfigCellCustom.CUSTOM_ITEM_FontMono, true));
-    private final AbstractConfigCell fontResetRow = cellGroup.appendCell(new ConfigCellCustom("FontReset", ConfigCellCustom.CUSTOM_ITEM_FontReset, true));
-    private final AbstractConfigCell dividerFonts = cellGroup.appendCell(new ConfigCellDivider());
-
     // Appearance
     private final AbstractConfigCell headerAppearance = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.Appearance)));
     private final AbstractConfigCell hideDividers = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getHideDividers()));
@@ -299,22 +282,7 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
         checkPushServiceTypeRows();
         checkOpenArchiveOnPullRows();
         checkMainTabsRows();
-        checkFontsRows();
         addRowsToMap(cellGroup);
-    }
-
-    private void checkFontsRows() {
-        boolean hasCustom = TypefaceHelper.hasAnyCustomFont();
-        if (hasCustom && cellGroup.rows.contains(typefaceRow)) {
-            cellGroup.rows.remove(typefaceRow);
-            if (listAdapter != null) listAdapter.notifyDataSetChanged();
-        } else if (!hasCustom && !cellGroup.rows.contains(typefaceRow)) {
-            int idx = cellGroup.rows.indexOf(fontRegularRow);
-            if (idx > 0) {
-                cellGroup.rows.add(idx, typefaceRow);
-                if (listAdapter != null) listAdapter.notifyDataSetChanged();
-            }
-        }
     }
 
     @SuppressLint({"NewApi", "NotifyDataSetChanged", "UseCompatLoadingForDrawables"})
@@ -395,16 +363,6 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
             } else if (key.equals(NekoConfig.dnsType.getKey())) {
                 checkCustomDoHRows();
                 tooltip.showWithAction(0, UndoView.ACTION_NEED_RESTART, null, null);
-            } else if (key.equals(NekoConfig.typeface.getKey())) {
-                tooltip.showWithAction(0, UndoView.ACTION_NEED_RESTART, null, null);
-                checkFontsRows();
-            } else if (key.startsWith("CustomFont")) {
-                TypefaceHelper.clearAllFontCaches();
-                AndroidUtilities.runOnUIThread(() -> {
-                    if (LaunchActivity.instance != null) {
-                        LaunchActivity.instance.recreate();
-                    }
-                }, 100);
             } else if (key.equals(NaConfig.INSTANCE.getDisableDialogsFloatingButton().getKey())) {
                 tooltip.showWithAction(0, UndoView.ACTION_NEED_RESTART, null, null);
             } else if (key.equals(NaConfig.INSTANCE.getHidePremiumSection().getKey())) {
@@ -459,33 +417,7 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
 
     @Override
     protected void onCustomCellClick(View view, int position, float x, float y) {
-        if (position == cellGroup.rows.indexOf(fontRegularRow)) {
-            presentFragment(new FontPickerActivity(TypefaceHelper.FONT_CATEGORY_REGULAR));
-        } else if (position == cellGroup.rows.indexOf(fontBoldRow)) {
-            presentFragment(new FontPickerActivity(TypefaceHelper.FONT_CATEGORY_BOLD));
-        } else if (position == cellGroup.rows.indexOf(fontItalicRow)) {
-            presentFragment(new FontPickerActivity(TypefaceHelper.FONT_CATEGORY_ITALIC));
-        } else if (position == cellGroup.rows.indexOf(fontMonoRow)) {
-            presentFragment(new FontPickerActivity(TypefaceHelper.FONT_CATEGORY_MONO));
-        } else if (position == cellGroup.rows.indexOf(fontResetRow)) {
-            if (getParentActivity() == null) return;
-            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-            builder.setTitle(getString(R.string.FontReset));
-            builder.setMessage(getString(R.string.FontResetConfirm));
-            builder.setPositiveButton(getString(R.string.FontApplyButton), (dialog, which) -> {
-                TypefaceHelper.resetAllFonts();
-                TypefaceHelper.clearAllFontCaches();
-                AndroidUtilities.runOnUIThread(() -> {
-                    if (LaunchActivity.instance != null) {
-                        LaunchActivity.instance.recreate();
-                    }
-                }, 100);
-            });
-            builder.setNegativeButton(getString(R.string.Cancel), null);
-            showDialog(builder.create());
-        }
     }
-
     @Override
     protected boolean onItemLongClick(View view, int position, float x, float y) {
         AbstractConfigCell a = cellGroup.rows.get(position);
@@ -519,50 +451,6 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
 
         public ListAdapter(Context context) {
             super(context);
-        }
-
-        @Override
-        protected View onCreateCustomViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = null;
-            if (viewType == ConfigCellCustom.CUSTOM_ITEM_FontRegular ||
-                    viewType == ConfigCellCustom.CUSTOM_ITEM_FontBold ||
-                    viewType == ConfigCellCustom.CUSTOM_ITEM_FontItalic ||
-                    viewType == ConfigCellCustom.CUSTOM_ITEM_FontMono) {
-                view = new TextSettingsCell(mContext);
-            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_FontReset) {
-                view = new TextCell(mContext);
-            }
-            return view;
-        }
-
-        @Override
-        protected void onBindCustomViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            if (holder.itemView instanceof TextSettingsCell textCell) {
-                String category = null;
-                String title = null;
-                if (position == cellGroup.rows.indexOf(fontRegularRow)) {
-                    category = TypefaceHelper.FONT_CATEGORY_REGULAR;
-                    title = getString(R.string.FontCategoryRegular);
-                } else if (position == cellGroup.rows.indexOf(fontBoldRow)) {
-                    category = TypefaceHelper.FONT_CATEGORY_BOLD;
-                    title = getString(R.string.FontCategoryBold);
-                } else if (position == cellGroup.rows.indexOf(fontItalicRow)) {
-                    category = TypefaceHelper.FONT_CATEGORY_ITALIC;
-                    title = getString(R.string.FontCategoryItalic);
-                } else if (position == cellGroup.rows.indexOf(fontMonoRow)) {
-                    category = TypefaceHelper.FONT_CATEGORY_MONO;
-                    title = getString(R.string.FontCategoryMono);
-                }
-                if (category != null) {
-                    String fontName = TypefaceHelper.getCustomFontName(category);
-                    textCell.setTextAndValue(title, fontName.isEmpty() ? getString(R.string.FontDefault) : fontName, true);
-                }
-            } else if (holder.itemView instanceof TextCell textCell) {
-                if (position == cellGroup.rows.indexOf(fontResetRow)) {
-                    textCell.setText(getString(R.string.FontReset), true);
-                    textCell.setTextColor(Theme.getColor(Theme.key_text_RedBold));
-                }
-            }
         }
     }
 

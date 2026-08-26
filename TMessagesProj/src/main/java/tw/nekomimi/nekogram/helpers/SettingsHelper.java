@@ -24,6 +24,7 @@ import tw.nekomimi.nekogram.settings.NekoGeneralSettingsActivity;
 import tw.nekomimi.nekogram.settings.NekoPasscodeSettingsActivity;
 import tw.nekomimi.nekogram.settings.NekoSettingsActivity;
 import tw.nekomimi.nekogram.settings.NekoTranslatorSettingsActivity;
+import tw.nekomimi.nekogram.settings.TurboSettingsActivity;
 
 public class SettingsHelper {
 
@@ -70,6 +71,9 @@ public class SettingsHelper {
                 case "t":
                     fragment = nekox_fragment = new NekoTranslatorSettingsActivity();
                     break;
+                case "turbo":
+                    fragment = nekox_fragment = new TurboSettingsActivity();
+                    break;
                 case "send_logs":
                     sendLogs(activity, false);
                     return;
@@ -115,6 +119,7 @@ public class SettingsHelper {
         fragments.add(new NekoChatSettingsActivity());
         fragments.add(new NekoExperimentalSettingsActivity());
         fragments.add(new NekoTranslatorSettingsActivity());
+        fragments.add(new TurboSettingsActivity());
 
         String n_title = getString(R.string.NekoSettings);
         for (BaseNekoXSettingsActivity fragment: fragments) {

@@ -13,6 +13,9 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 
 ## Features
 
+### Settings
+- One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
+
 ### Share sheet / forwarding
 - Folder tabs for quick chat/folder selection
 - Swipe between folder tabs with the content following your finger (like in the chat list)
@@ -20,7 +23,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 - Forwarding toggles: hide sender / hide caption / silent
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
 - Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
-- Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Nagram X → Chat
+- Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Turbo → Forwarding
 - Edit text when forwarding: pencil button in the share sheet loads the message text into the comment field — edit before sending; changed text is sent as a copy without a forward label, unchanged goes as a normal forward
 - Text formatting in the share sheet comment field: select text to get the chat-style menu — bold, italic, mono, spoiler, links and more
 
@@ -32,16 +35,16 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 ### Media viewer
 - Swipe GIFs with photos and videos (toggle, off by default)
 - In large/old chats, swipe left/right works right away on open
-- Optional scroll to the seen photo on close (Chat → Media)
-- Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Chat → Media, off by default; beta)
-- Auto-rotate media button in the viewer with three modes: off / fit content / always (media turns to fill the screen by its aspect); the same setting with animated icons in Chat → Media, off by default
+- Optional scroll to the seen photo on close (Turbo → Media)
+- Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Turbo → Media, off by default; beta)
+- Auto-rotate media button in the viewer with three modes: off / fit content / always (media turns to fill the screen by its aspect); the same setting with animated icons in Turbo → Media, off by default
 
 ### Deleted messages
 - Filtering by chat category
 
 ### Input field
-- iOS-style input bar (Chat settings, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
-- Action button style (Chat settings): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle
+- iOS-style input bar (Turbo → Input Bar, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
+- Action button style (Turbo → Input Bar): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle
 - Recorded voice review: the delete button is a separate round glass button matching the bar; the timeline has balanced insets
 
 ### App updates
@@ -63,7 +66,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 ## Fixes
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
 - Crash fix when loading incomplete emoji packs
-- Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Chat → Media) is on by default
+- Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Turbo → Media) is on by default
 - Fixed contacts sync in the system phonebook and dialer
 - Background music now pauses or ducks per the "Pause music on media" setting when playing voice messages, round videos, and videos
 - Background music resumes automatically after playback

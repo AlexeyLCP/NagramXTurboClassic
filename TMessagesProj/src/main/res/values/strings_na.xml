@@ -119,6 +119,8 @@
     <string name="ActionButtonStyleAccent">Accent</string>
     <string name="ActionButtonStyleNeutral">Neutral</string>
     <string name="ActionButtonStyleWhite">White</string>
+    <string name="NagramXTurbo">Turbo</string>
+    <string name="ForwardingSettings">Forwarding</string>
     <string name="ForwardProtectedMode">Forward Protected Messages</string>
     <string name="ForwardProtectedModeAsk">Ask</string>
     <string name="ForwardProtectedModeAlways">Forward</string>
