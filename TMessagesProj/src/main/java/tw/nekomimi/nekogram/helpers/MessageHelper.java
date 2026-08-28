@@ -35,6 +35,7 @@ import com.radolyn.ayugram.utils.AyuState;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteException;
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BaseController;
 import org.telegram.messenger.ChatObject;
@@ -134,7 +135,7 @@ public class MessageHelper extends BaseController {
             if (!f.exists() || f.getAbsolutePath().endsWith("/cache")) {
                 path = null;
             }
-            if (TextUtils.isEmpty(path) && (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() || NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool())) {
+            if (!BuildVars.TURBO_BASE && TextUtils.isEmpty(path) && (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() || NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool())) {
                 String fileName = f.getName();
                 if (!TextUtils.isEmpty(fileName)) {
                     File found = AyuMessageUtils.findExistingFileByBaseNameFast(fileName);
@@ -226,7 +227,7 @@ public class MessageHelper extends BaseController {
 
                 if (ignoreBlocked) {
                     long fromId = MessageObject.getFromChatId(message);
-                    if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                    if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                         continue;
                     }
                     if (message.reply_to != null && message.reply_to.reply_to_msg_id != 0) {
@@ -256,7 +257,7 @@ public class MessageHelper extends BaseController {
                         }
                         if (message.replyMessage != null) {
                             fromId = MessageObject.getFromChatId(message.replyMessage);
-                            if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                            if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                                 continue;
                             }
                         }
@@ -264,7 +265,7 @@ public class MessageHelper extends BaseController {
                 }
 
                 MessageObject obj = new MessageObject(currentAccount, message, false, false);
-                if (AyuFilter.isFiltered(obj, null)) {
+                if (!BuildVars.TURBO_BASE && AyuFilter.isFiltered(obj, null)) {
                     continue;
                 }
                 if (getMessagesController().getUser(obj.getSenderId()) == null) {
@@ -638,8 +639,10 @@ public class MessageHelper extends BaseController {
                 }
                 Runnable deleteAction = () -> {
                     for (ArrayList<Integer> list : lists) {
-                        for (int msgId : list) {
-                            AyuState.permitDeleteMessage(dialogId, msgId);
+                        if (!BuildVars.TURBO_BASE) {
+                            for (int msgId : list) {
+                                AyuState.permitDeleteMessage(dialogId, msgId);
+                            }
                         }
                         getMessagesController().deleteMessages(list, null, null, dialogId, 0, true, 0);
                     }
@@ -1042,7 +1045,7 @@ public class MessageHelper extends BaseController {
         if (!NekoConfig.ignoreBlocked.Bool()) {
             return false;
         }
-        return getMessagesController().blockePeers.indexOfKey(senderId) >= 0 || AyuFilter.isCustomFilteredPeer(senderId);
+        return getMessagesController().blockePeers.indexOfKey(senderId) >= 0 || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(senderId);
     }
 
     public boolean isBlockedOrFiltered(TLRPC.Message message) {
@@ -1057,8 +1060,8 @@ public class MessageHelper extends BaseController {
             return false;
         }
         long fromId = message.getFromChatId();
-        boolean blocked = isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId);
-        return blocked || AyuFilter.isFiltered(message, null);
+        boolean blocked = isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId);
+        return blocked || !BuildVars.TURBO_BASE && AyuFilter.isFiltered(message, null);
     }
 
     public static void copyVideoFrameToClipboard(File videoFile, long positionMs, View bulletinContainer, Theme.ResourcesProvider resourcesProvider, Runnable fallbackAction) {

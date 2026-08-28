@@ -104,6 +104,7 @@ import androidx.core.math.MathUtils;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BotForumHelper;
 import org.telegram.messenger.BotInlineKeyboard;
@@ -27671,7 +27672,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         sb.append(formatPluralString("AccDescrNumberOfReplies", getRepliesCount()));
                     }
                     if (currentMessageObject.messageOwner.reactions != null && currentMessageObject.messageOwner.reactions.results != null) {
-                        var visibleReactionCounts = ReactionFilter.getReactionCounts(currentAccount, currentMessageObject.getDialogId(), currentMessageObject.messageOwner.reactions);
+                        var visibleReactionCounts = !BuildVars.TURBO_BASE ? ReactionFilter.getReactionCounts(currentAccount, currentMessageObject.getDialogId(), currentMessageObject.messageOwner.reactions) : currentMessageObject.messageOwner.reactions.results;
                         if (visibleReactionCounts.size() == 1) {
                             TLRPC.ReactionCount reaction = visibleReactionCounts.get(0);
                             String emoticon = reaction.reaction instanceof TLRPC.TL_reactionEmoji ? ((TLRPC.TL_reactionEmoji) reaction.reaction).emoticon : "";
@@ -27680,7 +27681,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 boolean isMe = false;
                                 String userName = "";
                                 if (currentMessageObject.messageOwner.reactions.recent_reactions != null && currentMessageObject.messageOwner.reactions.recent_reactions.size() == 1) {
-                                    TLRPC.MessagePeerReaction recentReaction = ReactionFilter.getFirstReaction(currentAccount, currentMessageObject.getDialogId(), currentMessageObject.messageOwner.reactions);
+                                    TLRPC.MessagePeerReaction recentReaction = !BuildVars.TURBO_BASE ? ReactionFilter.getFirstReaction(currentAccount, currentMessageObject.getDialogId(), currentMessageObject.messageOwner.reactions) : currentMessageObject.messageOwner.reactions.recent_reactions.get(0);
                                     if (recentReaction != null) {
                                         TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(MessageObject.getPeerId(recentReaction.peer_id));
                                         isMe = UserObject.isUserSelf(user);

@@ -96,16 +96,30 @@ jobs:
           echo "Turbo build: T${TURBO_BUILD_NUMBER}"
           ./gradlew TMessagesProj:assembleStaging
 
-          APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
+          APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk' ! -name '*_base*')
           APK=$(dirname $APK)
           echo "APK=$APK" >> $GITHUB_ENV
-          APK_FILE=$(find "$APK" -name '*arm64-v8a*.apk' | head -1)
+          APK_FILE=$(find "$APK" -name '*arm64-v8a*.apk' ! -name '*_base*' | head -1)
           BADGING=$(${ANDROID_HOME}/build-tools/36.0.0/aapt2 dump badging "$APK_FILE")
           echo "version_name=$(echo "$BADGING" | sed -n "s/.*versionName='\([^']*\).*/\1/p" | head -1)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: Staging
           path: ${{ env.APK }}
+      - name: Staging Base Build
+        if: github.event.inputs.upload != 'y'
+        env:
+          COMMIT_ID: ${{ github.sha }}
+          TURBO_BUILD_NUMBER: ${{ vars.TURBO_BUILD_NUMBER }}
+          BUILD_TIMESTAMP: ${{ steps.staging_build_step.outputs.build_timestamp }}
+        run: |
+          export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
+          ./gradlew TMessagesProj:assembleStaging -PTURBO_BASE=1
+      - uses: actions/upload-artifact@v4
+        if: github.event.inputs.upload != 'y'
+        with:
+          name: StagingBase
+          path: ${{ env.APK }}/*_base*.apk
   upload:
     name: Upload staging
     if: github.event.inputs.upload != 'y'
@@ -253,15 +267,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
-          APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' | head -1)
+          APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' ! -name '*_base*' | head -1)
+          APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' ! -name '*_base*' | head -1)
+          APK_BASE_ARM64=$(find artifacts -name '*_base*arm64-v8a*.apk' | head -1)
+          APK_BASE_ARMV7=$(find artifacts -name '*_base*armeabi-v7a*.apk' | head -1)
+          ASSETS=()
+          for f in "$APK_ARM64" "$APK_ARMV7" "$APK_BASE_ARM64" "$APK_BASE_ARMV7"; do
+            [ -n "$f" ] && ASSETS+=("$f")
+          done
           if gh release view staging >/dev/null 2>&1; then
-            gh release upload staging "$APK_ARM64" "$APK_ARMV7"
+            gh release upload staging "${ASSETS[@]}"
           else
-            gh release create staging "$APK_ARM64" "$APK_ARMV7" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
+            gh release create staging "${ASSETS[@]}" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
           fi
-          ASSET_URL_ARM64=$(gh release view staging --json assets --jq '[.assets[] | select(.name | contains("arm64-v8a"))] | max_by(.createdAt) | .url // empty')
-          ASSET_URL_ARMV7=$(gh release view staging --json assets --jq '[.assets[] | select(.name | contains("armeabi-v7a"))] | max_by(.createdAt) | .url // empty')
+          RELEASE_ASSETS=$(gh release view staging --json assets)
+          ASSET_URL_ARM64=$(jq -r '[.assets[] | select(.name | contains("arm64-v8a") and (contains("_base") | not))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_ARMV7=$(jq -r '[.assets[] | select(.name | contains("armeabi-v7a") and (contains("_base") | not))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
           echo "url=$ASSET_URL_ARM64" >> "$GITHUB_OUTPUT"
           echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
       - name: Head commit info

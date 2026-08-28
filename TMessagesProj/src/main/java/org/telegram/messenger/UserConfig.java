@@ -586,7 +586,7 @@ public class UserConfig extends BaseController {
         if (user == null) {
             return false;
         }
-        return user.premium || NekoConfig.localPremium.Bool();
+        return user.premium || !BuildVars.TURBO_BASE && NekoConfig.localPremium.Bool();
     }
 
     public Long getEmojiStatus() {

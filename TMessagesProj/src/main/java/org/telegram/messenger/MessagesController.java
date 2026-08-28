@@ -842,7 +842,7 @@ public class MessagesController extends BaseController implements NotificationCe
             if (needRequest) {
                 final TLMethod<TLRPC.messages_Messages> request;
                 if (isReactions) {
-                    if (ReactionFilter.shouldFilter(currentAccount, dialogId)) {
+                    if (!BuildVars.TURBO_BASE && ReactionFilter.shouldFilter(currentAccount, dialogId)) {
                         ReactionFilter.requestNextReactionMention(this, currentAccount, dialogId, topicId, 0, callback);
                         return;
                     }
@@ -878,7 +878,7 @@ public class MessagesController extends BaseController implements NotificationCe
         if (dialogFilters.isEmpty()) {
             return;
         }
-        if (!premium && !NekoConfig.localPremium.Bool()) {
+        if (!premium && (BuildVars.TURBO_BASE || !NekoConfig.localPremium.Bool())) {
             if (!dialogFilters.get(0).isDefault()) {
                 for (int i = 1; i < dialogFilters.size(); i++) {
                     if (dialogFilters.get(i).isDefault()) {
@@ -911,7 +911,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     if (!filtersSortedById.get(i).locked) {
                         changed = true;
                     }
-                    filtersSortedById.get(i).locked = !NekoConfig.localPremium.Bool();
+                    filtersSortedById.get(i).locked = BuildVars.TURBO_BASE || !NekoConfig.localPremium.Bool();
                 } else {
                     if (filtersSortedById.get(i).locked) {
                         changed = true;
@@ -950,7 +950,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isPremiumUser(TLRPC.User currentUser) {
-        return currentUser != null && (currentUser.premium || currentUser.id == getUserConfig().getClientUserId() && NekoConfig.localPremium.Bool()) && !isSupportUser(currentUser);
+        return currentUser != null && (currentUser.premium || currentUser.id == getUserConfig().getClientUserId() && !BuildVars.TURBO_BASE && NekoConfig.localPremium.Bool()) && !isSupportUser(currentUser);
     }
 
     public boolean didPressTranscribeButtonEnough() {
@@ -2499,7 +2499,7 @@ public class MessagesController extends BaseController implements NotificationCe
             } else if (response instanceof TLRPC.TL_messages_dialogFilters) {
                 TLRPC.TL_messages_dialogFilters res = (TLRPC.TL_messages_dialogFilters) response;
                 if (folderTags != res.tags_enabled) {
-                    setFolderTags(res.tags_enabled || !getUserConfig().isPremium() && NekoConfig.localPremium.Bool());
+                    setFolderTags(res.tags_enabled || !getUserConfig().isPremium() && !BuildVars.TURBO_BASE && NekoConfig.localPremium.Bool());
                     AndroidUtilities.runOnUIThread(() -> {
                         getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated);
                     });
@@ -2658,7 +2658,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 user.emoji_status = new_emoji_status;
                 getNotificationCenter().postNotificationName(NotificationCenter.userEmojiStatusUpdated, user);
             }
-            LocalPremiumStatusHelper.apply(new_emoji_status);
+            if (!BuildVars.TURBO_BASE) {
+                LocalPremiumStatusHelper.apply(new_emoji_status);
+            }
         } else {
             TLRPC.TL_channels_updateEmojiStatus req = new TLRPC.TL_channels_updateEmojiStatus();
             req.channel = getInputChannel(-dialogId);
@@ -6908,7 +6910,7 @@ public class MessagesController extends BaseController implements NotificationCe
         TLRPC.User oldUser = users.get(user.id);
         if (NaConfig.INSTANCE.getSaveLocalLastSeen().Bool() && user.id != getUserConfig().getClientUserId() && user.status instanceof TLRPC.TL_userStatusOffline) {
             int lastSeen = user.status.expires;
-            if (lastSeen > 0) {
+            if (!BuildVars.TURBO_BASE && lastSeen > 0) {
                 LastSeenHelper.saveLastSeen(user.id, lastSeen);
             }
         }
@@ -9454,12 +9456,15 @@ public class MessagesController extends BaseController implements NotificationCe
 
         // --- AyuGram hook
         int ayuDeletedMessagesCount = 0;
-        if (!scheduled && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
-            var ayuMessagesController = AyuMessagesController.getInstance();
+        if (!scheduled && !BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
             if (DialogObject.isEncryptedDialog(dialogId) && messages != null && !messages.isEmpty()) { // process TTL messages from secrets
                 final ArrayList<Integer> messagesCopy = new ArrayList<>(messages);
                 final long dialogIdFinal = dialogId;
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                    if (BuildVars.TURBO_BASE) {
+                        return;
+                    }
+                    var ayuMessagesController = AyuMessagesController.getInstance();
                     for (int a = 0; a < messagesCopy.size(); a++) {
                         int msgId = messagesCopy.get(a);
                         if (AyuState.isDeletePermitted(dialogIdFinal, msgId)) {
@@ -9487,6 +9492,10 @@ public class MessagesController extends BaseController implements NotificationCe
                 final ArrayList<Integer> messagesCopy = new ArrayList<>(messages);
                 final long dialogIdFinal = dialogId;
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                    if (BuildVars.TURBO_BASE) {
+                        return;
+                    }
+                    var ayuMessagesController = AyuMessagesController.getInstance();
                     var invalidate = new ArrayList<Integer>();
                     for (var msgId : messagesCopy) {
                         if (AyuState.isDeletePermitted(dialogIdFinal, msgId)) {
@@ -9515,9 +9524,13 @@ public class MessagesController extends BaseController implements NotificationCe
                         permittedForAyuDeletion.add(msgId);
                     }
                 }
-                var existingMessageIds = ayuMessagesController.getExistingMessageIds(userId, dialogId, permittedForAyuDeletion);
+                var existingMessageIds = AyuMessagesController.getInstance().getExistingMessageIds(userId, dialogId, permittedForAyuDeletion);
                 if (!existingMessageIds.isEmpty()) {
-                    Utilities.globalQueue.postRunnable(() -> ayuMessagesController.deleteMessages(userId, dialogId, existingMessageIds));
+                    Utilities.globalQueue.postRunnable(() -> {
+                        if (!BuildVars.TURBO_BASE) {
+                            AyuMessagesController.getInstance().deleteMessages(userId, dialogId, existingMessageIds);
+                        }
+                    });
                     ayuDeletedMessagesCount = existingMessageIds.size();
                 }
             }
@@ -11409,7 +11422,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     LongSparseIntArray blockePeersCopy = blockePeers.clone();
                     ArrayList<PrintingUser> filteredArr = new ArrayList<>();
                     for (PrintingUser pu : arr) {
-                        if (blockePeersCopy.indexOfKey(pu.userId) < 0 && !AyuFilter.isCustomFilteredPeer(pu.userId)) {
+                        if (blockePeersCopy.indexOfKey(pu.userId) < 0 && (BuildVars.TURBO_BASE || !AyuFilter.isCustomFilteredPeer(pu.userId))) {
                             filteredArr.add(pu);
                         }
                     }
@@ -18200,7 +18213,7 @@ public class MessagesController extends BaseController implements NotificationCe
             }
             if (!updates.out && user != null && user.status != null && user.status.expires <= 0 && Math.abs(getConnectionsManager().getCurrentTime() - updates.date) < 30) {
                 onlinePrivacy.put(user.id, updates.date);
-                LastSeenHelper.saveLastSeen(user.id, updates.date);
+                if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeen(user.id, updates.date);
                 updateStatus = true;
             }
 
@@ -18820,7 +18833,7 @@ public class MessagesController extends BaseController implements NotificationCe
                             }
                             if (!message.out && a == 1 && user.status != null && user.status.expires <= 0 && Math.abs(getConnectionsManager().getCurrentTime() - message.date) < 30) {
                                 onlinePrivacy.put(userId, message.date);
-                                LastSeenHelper.saveLastSeen(userId, message.date);
+                                if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeen(userId, message.date);
                                 interfaceUpdateMask |= UPDATE_MASK_STATUS;
                             }
                         }
@@ -19059,7 +19072,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.User user = getUser(update.peer.user_id);
                     if (user != null && user.status != null && user.status.expires <= 0 && Math.abs(getConnectionsManager().getCurrentTime() - date) < 30) {
                         onlinePrivacy.put(update.peer.user_id, date);
-                        LastSeenHelper.saveLastSeen(update.peer.user_id, date);
+                        if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeen(update.peer.user_id, date);
                         interfaceUpdateMask |= UPDATE_MASK_STATUS;
                     }
                 }
@@ -19246,7 +19259,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     }
                     if (Math.abs(getConnectionsManager().getCurrentTime() - date) < 30) {
                         onlinePrivacy.put(userId, date);
-                        LastSeenHelper.saveLastSeen(userId, date);
+                        if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeen(userId, date);
                     }
                 }
             } else if (baseUpdate instanceof TL_update.TL_updateChatParticipants) {
@@ -19410,7 +19423,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     }
                     if (Math.abs(getConnectionsManager().getCurrentTime() - date) < 30) {
                         onlinePrivacy.put(encryptedChat.user_id, date);
-                        LastSeenHelper.saveLastSeen(encryptedChat.user_id, date);
+                        if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeen(encryptedChat.user_id, date);
                     }
                 }
             } else if (baseUpdate instanceof TL_update.TL_updateEncryptedMessagesRead) {
@@ -19817,13 +19830,13 @@ public class MessagesController extends BaseController implements NotificationCe
                 long dialogId = MessageObject.getPeerId(update.peer);
 
                 getMessagesStorage().updateMessageReactions(dialogId, update.msg_id, update.reactions);
-                if (NaConfig.INSTANCE.getSaveLocalLastSeen().Bool()) {
+                if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getSaveLocalLastSeen().Bool()) {
                     LastSeenHelper.saveLastSeenFromMessageReactions(update.reactions, getUserConfig().getClientUserId());
                 }
 
                 if (update.updateUnreadState) {
                     SparseBooleanArray sparseBooleanArray = new SparseBooleanArray();
-                    sparseBooleanArray.put(update.msg_id, ReactionFilter.hasUnreadReactions(currentAccount, dialogId, update.reactions));
+                    sparseBooleanArray.put(update.msg_id, BuildVars.TURBO_BASE ? MessageObject.hasUnreadReactions(update.reactions) : ReactionFilter.hasUnreadReactions(currentAccount, dialogId, update.reactions));
                     final long topicId = isMonoForum(dialogId) && ChatObject.canManageMonoForum(currentAccount, dialogId) ? DialogObject.getPeerDialogId(update.saved_peer_id) : update.top_msg_id;
                     if (BuildVars.DEBUG_PRIVATE_VERSION) {
                         FileLog.d("check reactions for " + dialogId + " " + topicId);
@@ -19982,10 +19995,13 @@ public class MessagesController extends BaseController implements NotificationCe
         }
 
         // --- AyuGram request hook
-        if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && deletedMessages != null) {
-            var ayuMessagesController = AyuMessagesController.getInstance();
+        if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && deletedMessages != null) {
             var deletedMessagesFinal = deletedMessages.clone();
             getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                if (BuildVars.TURBO_BASE) {
+                    return;
+                }
+                var ayuMessagesController = AyuMessagesController.getInstance();
                 var notificationsToSend = new LongSparseArray<ArrayList<Integer>>();
                 for (int a = 0, size = deletedMessagesFinal.size(); a < size; a++) {
                     var possibleDialogId = deletedMessagesFinal.keyAt(a);
@@ -20224,7 +20240,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                         if (NaConfig.INSTANCE.getSaveLocalLastSeen().Bool() && update.status instanceof TLRPC.TL_userStatusOffline) {
                             int lastSeen = update.status.expires;
-                            if (lastSeen > 0) {
+                            if (!BuildVars.TURBO_BASE && lastSeen > 0) {
                                 LastSeenHelper.saveLastSeen(update.user_id, lastSeen);
                             }
                         }
@@ -21218,7 +21234,7 @@ public class MessagesController extends BaseController implements NotificationCe
                             if (unreadReactions == null) {
                                 unreadReactions = new SparseBooleanArray();
                             }
-                            unreadReactions.put(messageObject.getId(), ReactionFilter.hasUnreadReactions(currentAccount, messageObject.messageOwner));
+                            unreadReactions.put(messageObject.getId(), BuildVars.TURBO_BASE ? MessageObject.hasUnreadReactions(messageObject.messageOwner) : ReactionFilter.hasUnreadReactions(currentAccount, messageObject.messageOwner));
 
                             if (messageObject != null && messageObject.messageOwner instanceof TLRPC.TL_messageService && messageObject.messageOwner.action instanceof TLRPC.TL_messageActionConferenceCall && VoIPService.getSharedInstance() != null) {
                                 VoIPService.getSharedInstance().processMessageUpdate(messageObject);
@@ -21623,7 +21639,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         changed = true;
                     }
                 } else {
-                    if (!ReactionFilter.shouldFilter(currentAccount, dialogId) || hasUnreadReaction) {
+                    if (BuildVars.TURBO_BASE || !ReactionFilter.shouldFilter(currentAccount, dialogId) || hasUnreadReaction) {
                         needReload = true;
                     }
                 }

@@ -27,6 +27,7 @@ import androidx.core.graphics.ColorUtils;
 import org.telegram.ui.recyclerview.ChatListItemAnimator;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.DocumentObject;
 import org.telegram.messenger.Emoji;
@@ -186,9 +187,22 @@ public class ReactionsLayoutInBubble {
 
             comparator.dialogId = messageObject.getDialogId();
             if (messageObject.messageOwner.reactions != null && messageObject.messageOwner.reactions.results != null) {
-                var result = ReactionFilter.getReactionCountResult(currentAccount, messageObject.getDialogId(), messageObject.messageOwner.reactions);
-                var visibleReactionCounts = result.counts();
-                int totalCount = result.totalCount();
+                ArrayList<TLRPC.ReactionCount> visibleReactionCounts;
+                int totalCount;
+                if (!BuildVars.TURBO_BASE) {
+                    var result = ReactionFilter.getReactionCountResult(currentAccount, messageObject.getDialogId(), messageObject.messageOwner.reactions);
+                    visibleReactionCounts = result.counts();
+                    totalCount = result.totalCount();
+                } else {
+                    visibleReactionCounts = messageObject.messageOwner.reactions.results;
+                    totalCount = 0;
+                    for (TLRPC.ReactionCount reactionCount : visibleReactionCounts) {
+                        if (reactionCount == null) {
+                            continue;
+                        }
+                        totalCount += reactionCount.count;
+                    }
+                }
                 boolean includeEmptyStarButton = false;
                 boolean includeEmptyLikeButton = forceLikeDislikeReactions;
                 boolean includeEmptyDislikeButton = forceLikeDislikeReactions;
@@ -289,7 +303,7 @@ public class ReactionsLayoutInBubble {
                         } else if (reactionCount.count <= 3 && totalCount <= 3) {
                             for (int j = 0; j < messageObject.messageOwner.reactions.recent_reactions.size(); j++) {
                                 TLRPC.MessagePeerReaction recent = messageObject.messageOwner.reactions.recent_reactions.get(j);
-                                if (recent != null && ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), MessageObject.getPeerId(recent.peer_id))) {
+                                if (recent != null && !BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), MessageObject.getPeerId(recent.peer_id))) {
                                     continue;
                                 }
                                 VisibleReaction visibleReactionPeer = VisibleReaction.fromTL(recent.reaction);
@@ -335,7 +349,7 @@ public class ReactionsLayoutInBubble {
                     reactionButtons.get(i).reactionCount.lastDrawnPosition = pointer++;
                 }
             }
-            hasUnreadReactions = ReactionFilter.hasUnreadReactions(currentAccount, messageObject.messageOwner);
+            hasUnreadReactions = BuildVars.TURBO_BASE ? MessageObject.hasUnreadReactions(messageObject.messageOwner) : ReactionFilter.hasUnreadReactions(currentAccount, messageObject.messageOwner);
         }
         for (int i = 0; i < oldButtons.size(); i++) {
             oldButtons.get(i).detach();

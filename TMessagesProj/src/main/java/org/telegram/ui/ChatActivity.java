@@ -4995,8 +4995,8 @@ public class ChatActivity extends BaseFragment implements
                 headerItem.setSubItemShown(nkbtn_bookmarks_manager, BookmarksHelper.getBookmarkedMessageIds(currentAccount, dialog_id).length > 0);
             }
             hideTitleItem = NaConfig.INSTANCE.getChatMenuItemHideTitle().Bool() ? headerItem.lazilyAddSubItem(nkheaderbtn_hide_title, R.drawable.hide_title, getString(R.string.HideTitle)) : null;
-            if (NaConfig.INSTANCE.getChatMenuItemViewDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_viewDeleted, R.drawable.msg_view_file, getString(R.string.ViewDeleted));
-            if (NaConfig.INSTANCE.getChatMenuItemClearDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_clearDeleted, R.drawable.msg_clear, getString(R.string.ClearDeleted));
+            if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getChatMenuItemViewDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_viewDeleted, R.drawable.msg_view_file, getString(R.string.ViewDeleted));
+            if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getChatMenuItemClearDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_clearDeleted, R.drawable.msg_clear, getString(R.string.ClearDeleted));
             if (!isTopic) {
                 if (NaConfig.INSTANCE.getChatMenuItemDeleteOwnMessages().Bool() && (ChatObject.isMegagroup(currentChat) || currentChat != null && !ChatObject.isChannel(currentChat))) {
                     headerItem.lazilyAddSubItem(nkheaderbtn_zibi, R.drawable.msg_delete, LocaleController.getString(R.string.DeleteAllFromSelf));
@@ -10254,7 +10254,7 @@ public class ChatActivity extends BaseFragment implements
             return false;
         }
         long fromId = message.getFromChatId();
-        if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId) || AyuFilter.isFiltered(message, null)) {
+        if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && (AyuFilter.isBlockedChannel(fromId) || AyuFilter.isFiltered(message, null))) {
             return false;
         }
         int type = getMessageType(message);
@@ -11751,7 +11751,9 @@ public class ChatActivity extends BaseFragment implements
         if (getParentActivity() == null) {
             return;
         }
-        reactionsMentionCount = ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messages, reactionsMentionCount);
+        if (!BuildVars.TURBO_BASE) {
+            reactionsMentionCount = ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messages, reactionsMentionCount);
+        }
         boolean visible = reactionsMentionCount > 0 && (chatMode == 0 || chatMode == MODE_SUGGESTIONS);
         sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_REACTIONS, visible, animated);
         sideControlsButtonsLayout.setButtonCount(ChatActivitySideControlsButtonsLayout.BUTTON_REACTIONS, reactionsMentionCount, animated);
@@ -13163,10 +13165,10 @@ public class ChatActivity extends BaseFragment implements
     public void openForward(boolean fromActionBar) {
         boolean hasSelectedAyuDeletedMessage = hasSelectedAyuDeletedMessage();
         if ((isPeerNoForwards() || hasSelectedNoforwardsMessage() || hasSelectedAyuDeletedMessage) &&
-                !(chatMode != MODE_SCHEDULED && !hasSelectedAyuDeletedMessage && ProtectedForward.shouldBypassForwardRestriction(currentAccount, getSelectedMessages1()))) {
+                !(chatMode != MODE_SCHEDULED && !hasSelectedAyuDeletedMessage && !BuildVars.TURBO_BASE && ProtectedForward.shouldBypassForwardRestriction(currentAccount, getSelectedMessages1()))) {
             // We should update text if user changed locale without re-opening chat activity
             String str;
-            if (!hasSelectedAyuDeletedMessage && ProtectedForward.getMode() == ProtectedForward.FORWARD_PROTECTED_NEVER && getMessageHelper().canSendMessagesAsCopy(getSelectedMessages1())) {
+            if (!BuildVars.TURBO_BASE && !hasSelectedAyuDeletedMessage && ProtectedForward.getMode() == ProtectedForward.FORWARD_PROTECTED_NEVER && getMessageHelper().canSendMessagesAsCopy(getSelectedMessages1())) {
                 str = LocaleController.getString(R.string.ForwardProtectedDisabled);
             } else if (isPeerNoForwards()) {
                 if (getDialogId() > 0) {
@@ -17066,7 +17068,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                     updatePollVotesMentionButton(true);
                 }
-                if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && ReactionFilter.shouldFilter(currentAccount, dialog_id) && ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messageObject, reactionsMentionCount, newReactionsMentionCount -> reactionsMentionCount = newReactionsMentionCount)) {
+                if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && !BuildVars.TURBO_BASE && ReactionFilter.shouldFilter(currentAccount, dialog_id) && ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messageObject, reactionsMentionCount, newReactionsMentionCount -> reactionsMentionCount = newReactionsMentionCount)) {
                     updateReactionsMentionButton(true);
                 }
                 if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && messageCell.checkUnreadReactions(clipTop, chatListView.getMeasuredHeight() - blurredViewBottomOffset)) {
@@ -17103,7 +17105,7 @@ public class ChatActivity extends BaseFragment implements
                     maxVisibleId = Math.max(maxVisibleId, messageObject.getId());
                 }
                 hasTopicSeparator = cell.topicSeparator != null;
-                if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && ReactionFilter.shouldFilter(currentAccount, dialog_id) && ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messageObject, reactionsMentionCount, newReactionsMentionCount -> reactionsMentionCount = newReactionsMentionCount)) {
+                if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && !BuildVars.TURBO_BASE && ReactionFilter.shouldFilter(currentAccount, dialog_id) && ReactionFilter.markHiddenUnreadReactionsAsRead(getMessagesController(), currentAccount, dialog_id, getTopicId(), messageObject, reactionsMentionCount, newReactionsMentionCount -> reactionsMentionCount = newReactionsMentionCount)) {
                     updateReactionsMentionButton(true);
                 }
                 if (messageObject != null && fragmentOpened && openAnimationEnded && (chatListItemAnimator == null || !chatListItemAnimator.isRunning()) && cell.checkUnreadReactions(clipTop, chatListView.getMeasuredHeight() - blurredViewBottomOffset)) {
@@ -20234,7 +20236,7 @@ public class ChatActivity extends BaseFragment implements
 
                 boolean hasSelectedAyuDeletedMessage = hasSelectedAyuDeletedMessage();
                 boolean noforwards = isPeerNoForwards() || hasSelectedNoforwardsMessage() || hasSelectedAyuDeletedMessage;
-                boolean canForwardProtected = noforwards && !hasSelectedAyuDeletedMessage && ProtectedForward.shouldBypassForwardRestriction(currentAccount, getSelectedMessages1());
+                boolean canForwardProtected = noforwards && !hasSelectedAyuDeletedMessage && !BuildVars.TURBO_BASE && ProtectedForward.shouldBypassForwardRestriction(currentAccount, getSelectedMessages1());
                 boolean canForward = chatMode != MODE_SCHEDULED && ((cantForwardMessagesCount == 0 && !noforwards) || canForwardProtected);
                 boolean showForward = NaConfig.INSTANCE.getActionBarButtonForward().Bool();
                 boolean canSendMessage = ChatObject.canSendMessages(currentChat);
@@ -22159,7 +22161,7 @@ public class ChatActivity extends BaseFragment implements
             }
 
             // --- AyuGram history hook start
-            if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+            if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                 long dialogId = getDialogId();
                 long topicId = getTopicId();
 
@@ -22605,9 +22607,9 @@ public class ChatActivity extends BaseFragment implements
                     highlightPollOptionId = pollOptionId;
                 }
                 if (showScrollToMessageError && messageId != startLoadFromMessageId) {
-                    if (!AyuMessagesController.getInstance().isAyuDeletedMessageId(currentUserId, dialog_id, startLoadFromMessageId)) {
-                            BulletinFactory.of(this).createErrorBulletin(LocaleController.getString(R.string.MessageNotFound), themeDelegate).show();
-                        }
+                    if (BuildVars.TURBO_BASE || !AyuMessagesController.getInstance().isAyuDeletedMessageId(currentUserId, dialog_id, startLoadFromMessageId)) {
+                        BulletinFactory.of(this).createErrorBulletin(LocaleController.getString(R.string.MessageNotFound), themeDelegate).show();
+                    }
                 }
                 scrollToMessage = obj;
                 if (postponedScroll) {
@@ -25863,7 +25865,7 @@ public class ChatActivity extends BaseFragment implements
                     .createSimpleBulletin(R.raw.contact_check, getString(R.string.JoinedGroup))
                     .show(true);
             }
-        } else if (id == AyuConstants.DELETED_MEDIA_LOADED_NOTIFICATION) {
+        } else if (!BuildVars.TURBO_BASE && id == AyuConstants.DELETED_MEDIA_LOADED_NOTIFICATION) {
             try {
                 Utilities.globalQueue.postRunnable(() -> {
                     File file = (File) args[1];
@@ -25874,7 +25876,7 @@ public class ChatActivity extends BaseFragment implements
             }
         }
         // --- AyuGram hook (ayuDeleted)
-        else if (id == AyuConstants.MESSAGES_DELETED_NOTIFICATION) {
+        else if (!BuildVars.TURBO_BASE && id == AyuConstants.MESSAGES_DELETED_NOTIFICATION) {
             long dialogId = (Long) args[0];
             if (getDialogId() != dialogId && (ChatObject.isChannel(currentChat) || dialogId != 0)) {
                 return;
@@ -27663,10 +27665,12 @@ public class ChatActivity extends BaseFragment implements
             Integer mid = markAsDeletedMessages.get(a);
             MessageObject obj = chatAdapter != null && chatAdapter.isFiltered ? filteredMessagesDict.get(mid) :  messagesDict[loadIndex].get(mid);
 
-            if (!AyuSavePreferences.saveDeletedMessageFor(currentAccount, getDialogId(), obj) || AyuState.isDeletePermitted(getDialogId(), mid)) {
-                AyuState.messageDeleted(getDialogId(), mid);
-            } else {
-                continue;
+            if (!BuildVars.TURBO_BASE) {
+                if (!AyuSavePreferences.saveDeletedMessageFor(currentAccount, getDialogId(), obj) || AyuState.isDeletePermitted(getDialogId(), mid)) {
+                    AyuState.messageDeleted(getDialogId(), mid);
+                } else {
+                    continue;
+                }
             }
 
             if (selectedObject != null && obj == selectedObject || obj != null && selectedObjectGroup != null && selectedObjectGroup == groupedMessagesMap.get(obj.getGroupId())) {
@@ -31199,7 +31203,7 @@ public class ChatActivity extends BaseFragment implements
                     message = ((ChatMessageCell) view).getMessageObject();
                 } else if (view instanceof ChatActionCell) {
                     message = ((ChatActionCell) view).getMessageObject();
-                } else if (view instanceof DummyView) { // hide message
+                } else if (!BuildVars.TURBO_BASE && view instanceof DummyView) { // hide message
                     message = ((DummyView) view).getMessageObject();
                 }
                 if (message != null && message.messageOwner != null && message.messageOwner.media_unread && message.messageOwner.mentioned) {
@@ -32478,7 +32482,7 @@ public class ChatActivity extends BaseFragment implements
             }
 
             // AyuMoments menu start
-            if (NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool()
+            if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool()
                     && message.messageOwner.from_id != null
                     && message.messageOwner.from_id.user_id != getAccountInstance().getUserConfig().getClientUserId()
                     && !(AyuMessageUtils.isExpiredDocument(message) && (message.messageOwner.media.voice || message.messageOwner.media.round))
@@ -32490,7 +32494,7 @@ public class ChatActivity extends BaseFragment implements
                 icons.add(idx, R.drawable.msg_log);
             }
 
-            if (!isAyuDeleted && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+            if (!BuildVars.TURBO_BASE && !isAyuDeleted && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                 if (message.messageOwner.ttl > 0 || message.isVoiceOnce() || message.isRoundOnce()) {
                     boolean isExpiredVideo = AyuMessageUtils.isExpiredDocument(message);
                     boolean isExpiredPhoto = AyuMessageUtils.isExpiredPhoto(message);
@@ -32511,7 +32515,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 }
             }
-            if (!isAyuDeleted) {
+            if (!BuildVars.TURBO_BASE && !isAyuDeleted) {
                 if (!NekoConfig.sendReadMessagePackets.Bool()
                         && message.messageOwner.from_id != null
                         && message.messageOwner.from_id.user_id != getAccountInstance().getUserConfig().getClientUserId()
@@ -32621,10 +32625,28 @@ public class ChatActivity extends BaseFragment implements
                 if (isReactionsViewAvailable) {
                     ReactedHeaderView reactedView = new ReactedHeaderView(contentView.getContext(), currentAccount, primaryMessage, dialog_id);
 
-                    var reactionCountResult = ReactionFilter.getReactionCountResult(currentAccount, primaryMessage.getDialogId(), primaryMessage.messageOwner.reactions);
-                    int count = reactionCountResult.totalCount();
-                    var visibleReactionCounts = reactionCountResult.counts();
-                    boolean hasReactionsFromOtherUsers = reactionCountResult.hasReactionsFromOtherUsers();
+                    int count;
+                    ArrayList<TLRPC.ReactionCount> visibleReactionCounts;
+                    boolean hasReactionsFromOtherUsers;
+                    if (!BuildVars.TURBO_BASE) {
+                        var reactionCountResult = ReactionFilter.getReactionCountResult(currentAccount, primaryMessage.getDialogId(), primaryMessage.messageOwner.reactions);
+                        count = reactionCountResult.totalCount();
+                        visibleReactionCounts = reactionCountResult.counts();
+                        hasReactionsFromOtherUsers = reactionCountResult.hasReactionsFromOtherUsers();
+                    } else {
+                        visibleReactionCounts = primaryMessage.messageOwner.reactions == null ? new ArrayList<>() : primaryMessage.messageOwner.reactions.results;
+                        count = 0;
+                        hasReactionsFromOtherUsers = false;
+                        for (TLRPC.ReactionCount reactionCount : visibleReactionCounts) {
+                            if (reactionCount == null) {
+                                continue;
+                            }
+                            count += reactionCount.count;
+                            if (reactionCount.count > 1 || !reactionCount.chosen) {
+                                hasReactionsFromOtherUsers = true;
+                            }
+                        }
+                    }
 
                     final boolean canDeleteReactions = hasReactionsFromOtherUsers && ChatObject.canUserDoAdminAction(currentChat, ChatObject.ACTION_DELETE_MESSAGES);
                     final View tapAndHoldView;
@@ -34919,24 +34941,28 @@ public class ChatActivity extends BaseFragment implements
         boolean preserveDim = false;
         switch (option) {
             case AyuConstants.OPTION_HISTORY:
-                presentFragment(new AyuMessageHistory(selectedObject));
+                if (!BuildVars.TURBO_BASE) {
+                    presentFragment(new AyuMessageHistory(selectedObject));
+                }
                 break;
             case AyuConstants.OPTION_TTL:
-                AyuState.setAllowReadPacket(true, 1);
-                if (selectedObject.messageOwner.ttl == 0x7FFFFFFF) {
-                    selectedObject.messageOwner.ttl = 1;
+                if (!BuildVars.TURBO_BASE) {
+                    AyuState.setAllowReadPacket(true, 1);
+                    if (selectedObject.messageOwner.ttl == 0x7FFFFFFF) {
+                        selectedObject.messageOwner.ttl = 1;
+                    }
+                    sendSecretMessageRead(selectedObject, true, true);
+
+                    var prefs = new AyuSavePreferences(selectedObject.messageOwner, currentAccount);
+                    prefs.setDialogId(selectedObject.getDialogId());
+                    AyuMessagesController.getInstance().onMessageDeleted(prefs);
+
+                    Utilities.globalQueue.postRunnable(() -> sendSecretMediaDelete(selectedObject, true), 1000);
+                    BotWebViewVibrationEffect.SELECTION_CHANGE.vibrate();
                 }
-                sendSecretMessageRead(selectedObject, true, true);
-
-                var prefs = new AyuSavePreferences(selectedObject.messageOwner, currentAccount);
-                prefs.setDialogId(selectedObject.getDialogId());
-                AyuMessagesController.getInstance().onMessageDeleted(prefs);
-
-                Utilities.globalQueue.postRunnable(() -> sendSecretMediaDelete(selectedObject, true), 1000);
-                BotWebViewVibrationEffect.SELECTION_CHANGE.vibrate();
                 break;
             case AyuConstants.OPTION_TTL_SAVE:
-                if ((Build.VERSION.SDK_INT <= 28 || BuildVars.NO_SCOPED_STORAGE) && getParentActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (!BuildVars.TURBO_BASE && (Build.VERSION.SDK_INT <= 28 || BuildVars.NO_SCOPED_STORAGE) && getParentActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     getParentActivity().requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 4);
                     selectedObject = null;
                     selectedObjectGroup = null;
@@ -34944,6 +34970,7 @@ public class ChatActivity extends BaseFragment implements
                     return;
                 }
                 final MessageObject ttlMessage = selectedObject;
+                if (!BuildVars.TURBO_BASE) {
                 Utilities.globalQueue.postRunnable(() -> {
                     File fileToSave = null;
                     TLRPC.Document document = ttlMessage.getDocument();
@@ -35039,10 +35066,13 @@ public class ChatActivity extends BaseFragment implements
                         });
                     }
                 });
+                }
                 break;
             case AyuConstants.OPTION_READ_MESSAGE:
-                AyuGhostUtils.markReadOnServer(selectedObject, false);
-                BotWebViewVibrationEffect.SELECTION_CHANGE.vibrate();
+                if (!BuildVars.TURBO_BASE) {
+                    AyuGhostUtils.markReadOnServer(selectedObject, false);
+                    BotWebViewVibrationEffect.SELECTION_CHANGE.vibrate();
+                }
                 break;
             case OPTION_RETRY: {
                 final MessageObject object = selectedObject;
@@ -36013,8 +36043,10 @@ public class ChatActivity extends BaseFragment implements
                             if (error == null) {
                                 TLRPC.Updates updates = (TLRPC.Updates) response;
                                 getMessagesController().processUpdates(updates, false);
-                                for (int i = 0; i < req.id.size(); i++) {
-                                    AyuState.permitDeleteMessage(dialog_id, req.id.get(i));
+                                if (!BuildVars.TURBO_BASE) {
+                                    for (int i = 0; i < req.id.size(); i++) {
+                                        AyuState.permitDeleteMessage(dialog_id, req.id.get(i));
+                                    }
                                 }
                                 AndroidUtilities.runOnUIThread(() -> NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.messagesDeleted, req.id, getUserConfig().getClientUserId() == dialog_id ? 0 : -dialog_id, true, true));
                             } else if (error.text != null) {
@@ -36317,7 +36349,7 @@ public class ChatActivity extends BaseFragment implements
             }
         }
 
-        if (ProtectedForward.containsProtected(fmessages)) {
+        if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(fmessages)) {
             ProtectedForward.forwardProtected(this, fmessages, dids, message, notify, scheduleDate, scheduleRepeatPeriod, fragment);
             return true;
         }
@@ -39426,7 +39458,7 @@ public class ChatActivity extends BaseFragment implements
                 cell.setDelegate(getChatMessageCellDelegate());
                 view = cell;
             } else if (viewType == -1000) { // hide message
-                view = new DummyView(mContext);
+                view = !BuildVars.TURBO_BASE ? new DummyView(mContext) : new View(mContext);
             } else {
                 view = new View(mContext);
             }
@@ -40035,7 +40067,7 @@ public class ChatActivity extends BaseFragment implements
                     if (createUnreadMessageAfterId != 0) {
                         createUnreadMessageAfterId = 0;
                     }
-                } else if (view instanceof DummyView) { // hide message
+                } else if (!BuildVars.TURBO_BASE && view instanceof DummyView) { // hide message
                     DummyView dummyView = (DummyView) view;
                     dummyView.setMessageObject(message);
                 }
@@ -40069,17 +40101,17 @@ public class ChatActivity extends BaseFragment implements
                 }
                 if (NekoConfig.ignoreBlocked.Bool() && ChatObject.isMegagroup(currentChat)) {
                     long fromId = msg.getFromChatId();
-                    if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                    if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                         return -1000;
                     }
                     if (msg.replyMessageObject != null) {
                         fromId = msg.replyMessageObject.getFromChatId();
-                        if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                        if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                             return -1000;
                         }
                     }
                 }
-                if (AyuFilter.isFiltered(msg, getGroup(msg.getGroupId()))) {
+                if (!BuildVars.TURBO_BASE && AyuFilter.isFiltered(msg, getGroup(msg.getGroupId()))) {
                     return -1000;
                 }
                 if (msg.contentType == 2) { // ChatUnreadCell
@@ -40093,18 +40125,18 @@ public class ChatActivity extends BaseFragment implements
                         }
                         if (NekoConfig.ignoreBlocked.Bool() && ChatObject.isMegagroup(currentChat)) {
                             long fromId = m.getFromChatId();
-                            if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                            if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                                 continue;
                             }
                             if (m.replyMessageObject != null) {
                                 fromId = m.replyMessageObject.getFromChatId();
-                                if (isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId)) {
+                                if (isBlockedUser(fromId) || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId)) {
                                     continue;
                                 }
                             }
                         }
                         var g = getGroup(m.getGroupId());
-                        if (AyuFilter.isFiltered(m, g)) {
+                        if (!BuildVars.TURBO_BASE && AyuFilter.isFiltered(m, g)) {
                             continue;
                         }
                         hasVisibleAfter = true;
@@ -42001,7 +42033,7 @@ public class ChatActivity extends BaseFragment implements
                 Bundle args = new Bundle();
                 args.putLong("user_id", user.id);
                 args.putBoolean("expandPhoto", expandPhoto);
-                if (!user.bot) LastSeenHelper.saveLastSeenFromLoadedMessages(user.id, getUserConfig().getClientUserId(), messages, chatAdapter);
+                if (!BuildVars.TURBO_BASE && !user.bot) LastSeenHelper.saveLastSeenFromLoadedMessages(user.id, getUserConfig().getClientUserId(), messages, chatAdapter);
                 ProfileActivity fragment = new ProfileActivity(args);
                 fragment.setPlayProfileAnimation(currentUser != null && currentUser.id == user.id ? 1 : 0);
                 AndroidUtilities.setAdjustResizeToNothing(getParentActivity(), classGuid);
@@ -43753,7 +43785,7 @@ public class ChatActivity extends BaseFragment implements
                     showFontApplyDialog(locFile);
                     return;
                 }
-                if (AyuConstants.AYU_DATABASE_EXPORT.equals(message.getDocumentName())) {
+                if (!BuildVars.TURBO_BASE && AyuConstants.AYU_DATABASE_EXPORT.equals(message.getDocumentName())) {
                     File finalLocFile = locFile;
                     AlertUtil.showConfirm(getParentActivity(),
                             getString(R.string.ImportAyuDB),
@@ -44412,7 +44444,7 @@ public class ChatActivity extends BaseFragment implements
             }
             TLRPC.User user = getMessagesController().getUser(uid);
             if (user != null && !user.bot) {
-                LastSeenHelper.saveLastSeenFromLoadedMessages(uid, getUserConfig().getClientUserId(), messages, chatAdapter);
+                if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeenFromLoadedMessages(uid, getUserConfig().getClientUserId(), messages, chatAdapter);
             }
             ProfileActivity fragment = new ProfileActivity(args);
             fragment.setPlayProfileAnimation(currentUser != null && currentUser.id == uid ? 1 : 0);
@@ -46687,7 +46719,7 @@ public class ChatActivity extends BaseFragment implements
             performSelectBetweenMessages();
         } else if (id == nkheaderbtn_zibi) {
             getMessageHelper().createDeleteHistoryAlert(ChatActivity.this, currentChat, forumTopic, mergeDialogId, themeDelegate);
-        } else if (id == nkbtn_clearDeleted) {
+        } else if (!BuildVars.TURBO_BASE && id == nkbtn_clearDeleted) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
             builder.setTitle(LocaleController.getString(R.string.ClearDeleted));
             builder.setMessage(LocaleController.getString(R.string.ClearDeletedAlertMessage));
@@ -46708,7 +46740,7 @@ public class ChatActivity extends BaseFragment implements
             if (button != null) {
                 button.setTextColor(Theme.getColor(Theme.key_dialogTextRed));
             }
-        } else if (id == nkbtn_viewDeleted) {
+        } else if (!BuildVars.TURBO_BASE && id == nkbtn_viewDeleted) {
             presentFragment(new AyuViewDeleted(dialog_id));
         } else if (id == nkbtn_bookmarks_manager) {
             presentFragment(new BookmarksActivity(dialog_id));
@@ -49724,7 +49756,7 @@ public class ChatActivity extends BaseFragment implements
         if (!NekoConfig.ignoreBlocked.Bool()) {
             return false;
         }
-        return getMessagesController().blockePeers.indexOfKey(senderId) >= 0 || AyuFilter.isCustomFilteredPeer(senderId);
+        return getMessagesController().blockePeers.indexOfKey(senderId) >= 0 || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(senderId);
     }
 
     private void updateBotforumTabsBottomMargin() {

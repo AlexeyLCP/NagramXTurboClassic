@@ -17,6 +17,7 @@ import android.util.Pair;
 import com.radolyn.ayugram.utils.AyuGhostUtils;
 
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
 
 import java.io.ByteArrayInputStream;
@@ -339,7 +340,9 @@ public class NekoConfig {
         setGhostMode(newState);
 
         boolean sendOnlineNow = !newState && !sendOfflinePacketAfterOnlineLocked.Bool() && sendOfflinePacketAfterOnline.Bool();
-        AyuGhostUtils.performStatusRequest(sendOnlineNow);
+        if (!BuildVars.TURBO_BASE) {
+            AyuGhostUtils.performStatusRequest(sendOnlineNow);
+        }
     }
 
     private static final List<Pair<ConfigItem, ConfigItem>> ghostToggleItems = Arrays.asList(

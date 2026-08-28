@@ -15,6 +15,7 @@ Turbo updates on its own — in-app updates work independently of Nagram X.
 - **Custom fonts**: pick by category (Regular / Bold / Italic / Mono), import your own `.ttf`/`.otf` from chat, text size in every input field.
 - **Media viewer**: swipe GIFs with photos and videos (toggle, off by default), instant swipe in large chats, optional scroll-to-seen-photo on close, seamless video handoff (opens at preview position, resumes on close/scroll-back; off by default), auto-rotate button (off / fit content / always), Photo HDR toggle (on by default).
 - **Deleted messages**: save with filtering by chat category.
+- **Base build**: a ToS-friendlier APK without the disputable features (deleted/edited saving, ghost mode, last seen history, regex filters, protected-forward, local premium), published side by side with the regular one, with its own in-app update channel.
 - **App updates**: in-app check and download of new builds (manual + automatic, once a day).
 - **Bookmarks manager** in the chats menu (instead of a settings link).
 - **Folders**: edit folder membership from the chat list — add or remove chats to/from any folder in one go.

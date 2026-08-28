@@ -27,6 +27,7 @@ import com.radolyn.ayugram.messages.AyuMessagesController;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.LiteMode;
@@ -135,8 +136,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell dividerMedia = cellGroup.appendCell(new ConfigCellDivider());
 
     // Forwarding
-    private final AbstractConfigCell headerForwarding = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.ForwardingSettings)));
-    private final AbstractConfigCell forwardProtectedModeRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getForwardProtectedMode(), new String[]{
+    private final AbstractConfigCell headerForwarding = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellHeader(getString(R.string.ForwardingSettings)));
+    private final AbstractConfigCell forwardProtectedModeRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getForwardProtectedMode(), new String[]{
             getString(R.string.ForwardProtectedModeAsk),
             getString(R.string.ForwardProtectedModeAlways),
             getString(R.string.ForwardProtectedModeNever)
@@ -145,7 +146,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
             ProtectedForward.FORWARD_PROTECTED_ALWAYS,
             ProtectedForward.FORWARD_PROTECTED_NEVER
     }, null));
-    private final AbstractConfigCell dividerForwarding = cellGroup.appendCell(new ConfigCellDivider());
+    private final AbstractConfigCell dividerForwarding = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellDivider());
 
     // Fonts
     private final AbstractConfigCell headerFonts = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.FontsSettings)));
@@ -158,16 +159,16 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell dividerFonts = cellGroup.appendCell(new ConfigCellDivider());
 
     // Deleted Messages
-    private final AbstractConfigCell headerSavedDeletedMessages = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.DeletedMessages)));
-    private final AbstractConfigCell enableSaveDeletedMessagesRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveDeletedMessages(), getString(R.string.SaveDeletedMessagesHint)));
-    private final AbstractConfigCell messageSavingSaveMediaRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getMessageSavingSaveMedia(), getString(R.string.MessageSavingSaveMediaHint)));
-    private final AbstractConfigCell saveDeletedMessageForBotsUserRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSaveDeletedMessageForBotUser()));
-    private final AbstractConfigCell saveDeletedMessageInBotChatRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSaveDeletedMessageForBot()));
-    private final AbstractConfigCell translucentDeletedMessagesRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getTranslucentDeletedMessages()));
-    private final AbstractConfigCell useDeletedIconRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getUseDeletedIcon()));
-    private final AbstractConfigCell customDeletedMarkRow = cellGroup.appendCell(new ConfigCellTextInput(null, NaConfig.INSTANCE.getCustomDeletedMark(), "", null));
-    private final AbstractConfigCell enableSaveEditsHistoryRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveEditsHistory()));
-    private final AbstractConfigCell clearMessageDatabaseRow = cellGroup.appendCell(new ConfigCellTextCheckIcon(null, "ClearMessageDatabase", null, AyuData.totalSize > 0 ? AndroidUtilities.formatFileSize(AyuData.totalSize) : "...", R.drawable.msg_clear, false, () -> new AlertDialog.Builder(getContext(), getResourceProvider())
+    private final AbstractConfigCell headerSavedDeletedMessages = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellHeader(getString(R.string.DeletedMessages)));
+    private final AbstractConfigCell enableSaveDeletedMessagesRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveDeletedMessages(), getString(R.string.SaveDeletedMessagesHint)));
+    private final AbstractConfigCell messageSavingSaveMediaRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getMessageSavingSaveMedia(), getString(R.string.MessageSavingSaveMediaHint)));
+    private final AbstractConfigCell saveDeletedMessageForBotsUserRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSaveDeletedMessageForBotUser()));
+    private final AbstractConfigCell saveDeletedMessageInBotChatRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSaveDeletedMessageForBot()));
+    private final AbstractConfigCell translucentDeletedMessagesRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getTranslucentDeletedMessages()));
+    private final AbstractConfigCell useDeletedIconRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getUseDeletedIcon()));
+    private final AbstractConfigCell customDeletedMarkRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextInput(null, NaConfig.INSTANCE.getCustomDeletedMark(), "", null));
+    private final AbstractConfigCell enableSaveEditsHistoryRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveEditsHistory()));
+    private final AbstractConfigCell clearMessageDatabaseRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheckIcon(null, "ClearMessageDatabase", null, AyuData.totalSize > 0 ? AndroidUtilities.formatFileSize(AyuData.totalSize) : "...", R.drawable.msg_clear, false, () -> new AlertDialog.Builder(getContext(), getResourceProvider())
             .setTitle(getString(R.string.ClearMessageDatabase))
             .setMessage(getString(R.string.AreYouSure))
             .setPositiveButton(getString(R.string.Clear), (dialog, which) -> {
@@ -186,7 +187,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
             .setNegativeButton(getString(R.string.Cancel), (d, w) -> d.dismiss())
             .makeRed(AlertDialog.BUTTON_POSITIVE)
             .show()));
-    private final AbstractConfigCell dividerClear = cellGroup.appendCell(new ConfigCellDivider());
+    private final AbstractConfigCell dividerClear = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellDivider());
 
     private ListAdapter listAdapter;
     private InputBarPreviewCell inputBarPreviewCell;
@@ -202,16 +203,20 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
             cellGroup.rows.remove(saveDeletedMessageInBotChatRow);
         }
         checkFontsRows();
-        checkUseDeletedIconRows();
-        checkSaveBotMsgRows();
-        checkSaveDeletedRows();
+        if (!BuildVars.TURBO_BASE) {
+            checkUseDeletedIconRows();
+            checkSaveBotMsgRows();
+            checkSaveDeletedRows();
+        }
         addRowsToMap(cellGroup);
     }
 
     @Override
     public boolean onFragmentCreate() {
         super.onFragmentCreate();
-        AyuData.loadSizes(this::refreshAyuDataSize);
+        if (!BuildVars.TURBO_BASE) {
+            AyuData.loadSizes(this::refreshAyuDataSize);
+        }
         return true;
     }
 
@@ -259,11 +264,11 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
                     cellGroup.rows.remove(compactInputSizeRow);
                 }
                 listAdapter.notifyDataSetChanged();
-            } else if (key.equals(NaConfig.INSTANCE.getEnableSaveDeletedMessages().getKey())) {
+            } else if (!BuildVars.TURBO_BASE && key.equals(NaConfig.INSTANCE.getEnableSaveDeletedMessages().getKey())) {
                 checkSaveDeletedRows();
-            } else if (key.equals(NaConfig.INSTANCE.getUseDeletedIcon().getKey())) {
+            } else if (!BuildVars.TURBO_BASE && key.equals(NaConfig.INSTANCE.getUseDeletedIcon().getKey())) {
                 checkUseDeletedIconRows();
-            } else if (key.equals(NaConfig.INSTANCE.getSaveDeletedMessageForBotUser().getKey())) {
+            } else if (!BuildVars.TURBO_BASE && key.equals(NaConfig.INSTANCE.getSaveDeletedMessageForBotUser().getKey())) {
                 checkSaveBotMsgRows();
             } else if (key.equals(NekoConfig.typeface.getKey())) {
                 tooltip.showWithAction(0, UndoView.ACTION_NEED_RESTART, null, null);
@@ -303,7 +308,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     @Override
     protected boolean onItemLongClick(View view, int position, float x, float y) {
         AbstractConfigCell a = cellGroup.rows.get(position);
-        if (a == clearMessageDatabaseRow) {
+        if (!BuildVars.TURBO_BASE && a == clearMessageDatabaseRow) {
             ItemOptions options = makeLongClickOptions(view);
             options.add(R.drawable.msg_instant_link_solar, getString(R.string.ExportAyuDB), this::exportAyuDB);
             addDefaultLongClickOptions(options, "turbo", position);

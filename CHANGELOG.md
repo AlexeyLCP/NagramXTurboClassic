@@ -16,6 +16,9 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 ### Settings
 - One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
 
+### Base build
+- ToS-friendly "base" APK variant: built and published alongside the regular one (download links side by side in the release post), without the disputable features — deleted/edited message saving, ghost mode, last seen history, regex filters, forward from protected chats, local premium. Base builds receive their own in-app updates.
+
 ### Share sheet / forwarding
 - Folder tabs for quick chat/folder selection
 - Swipe between folder tabs with the content following your finger (like in the chat list)

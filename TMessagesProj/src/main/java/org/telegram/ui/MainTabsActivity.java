@@ -40,6 +40,7 @@ import androidx.core.view.WindowInsetsCompat;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildConfig;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
@@ -1326,7 +1327,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         }
         if (index == INDEX_SETTINGS) {
             ItemOptions o = ItemOptions.makeOptions(this, button);
-            if (NekoConfig.showGhostInDrawer.Bool()) {
+            if (!BuildVars.TURBO_BASE && NekoConfig.showGhostInDrawer.Bool()) {
                 final String msg = NekoConfig.isGhostModeActive()
                     ? getString(R.string.DisableGhostMode)
                     : getString(R.string.EnableGhostMode);

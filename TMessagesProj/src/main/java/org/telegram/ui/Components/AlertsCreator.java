@@ -8184,7 +8184,7 @@ public class AlertsCreator {
 
         // --- AyuGram hook
         final boolean[] keepLocally = {false};
-        if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && (selectedMessage == null || !selectedMessage.isEphemeral())) {
+        if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && (selectedMessage == null || !selectedMessage.isEphemeral())) {
             if (ayuFrameLayout == null) {
                 ayuFrameLayout = new FrameLayout(activity);
                 builder.setView(ayuFrameLayout);
@@ -8209,7 +8209,7 @@ public class AlertsCreator {
         // --- AyuGram hook
 
         AlertDialog.OnButtonClickListener deleteAction = (dialogInterface, i) -> {
-            if (keepLocally[0]) {
+            if (!BuildVars.TURBO_BASE && keepLocally[0]) {
                 AyuState.setHideSelection(true, 1);
             }
 
@@ -8232,12 +8232,14 @@ public class AlertsCreator {
 
                         ids.add(messageObject.getId());
                         // --- AyuGram hook
-                        if (!keepLocally[0]) {
-                            AyuState.permitDeleteMessage(dialogId, messageObject.getId());
-                        } else {
-                            var prefs = new AyuSavePreferences(messageObject.messageOwner, currentAccount);
-                            prefs.setDialogId(dialogId);
-                            AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                        if (!BuildVars.TURBO_BASE) {
+                            if (!keepLocally[0]) {
+                                AyuState.permitDeleteMessage(dialogId, messageObject.getId());
+                            } else {
+                                var prefs = new AyuSavePreferences(messageObject.messageOwner, currentAccount);
+                                prefs.setDialogId(dialogId);
+                                AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                            }
                         }
                         // --- AyuGram hook
                         if (encryptedChat != null && messageObject.messageOwner.random_id != 0 && messageObject.type != 10) {
@@ -8253,12 +8255,14 @@ public class AlertsCreator {
                     } else {
                         ids.add(selectedMessage.getId());
                         // --- AyuGram hook
-                    if (!keepLocally[0]) {
-                        AyuState.permitDeleteMessage(dialogId, selectedMessage.getId());
-                    } else {
-                        var prefs = new AyuSavePreferences(selectedMessage.messageOwner, currentAccount);
-                        prefs.setDialogId(dialogId);
-                        AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                    if (!BuildVars.TURBO_BASE) {
+                        if (!keepLocally[0]) {
+                            AyuState.permitDeleteMessage(dialogId, selectedMessage.getId());
+                        } else {
+                            var prefs = new AyuSavePreferences(selectedMessage.messageOwner, currentAccount);
+                            prefs.setDialogId(dialogId);
+                            AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                        }
                     }
 
                     if (encryptedChat != null && selectedMessage.messageOwner.random_id != 0 && selectedMessage.type != 10) {
@@ -8270,7 +8274,7 @@ public class AlertsCreator {
                     thisDialogId = mergeDialogId;
                 }
                 // --- AyuGram hook
-                if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+                if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                     ArrayList<Integer> finalIds = ids;
                     AndroidUtilities.runOnUIThread(() -> {
                         // invalidating views
@@ -8290,12 +8294,14 @@ public class AlertsCreator {
                     for (int b = 0; b < selectedMessages[a].size(); b++) {
                         ids.add(selectedMessages[a].keyAt(b));
                         // --- AyuGram hook
-                        if (!keepLocally[0]) {
-                            AyuState.permitDeleteMessage(dialogId, selectedMessages[a].keyAt(b));
-                        } else {
-                            var prefs = new AyuSavePreferences(selectedMessages[a].valueAt(b).messageOwner, currentAccount);
-                            prefs.setDialogId(dialogId);
-                            AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                        if (!BuildVars.TURBO_BASE) {
+                            if (!keepLocally[0]) {
+                                AyuState.permitDeleteMessage(dialogId, selectedMessages[a].keyAt(b));
+                            } else {
+                                var prefs = new AyuSavePreferences(selectedMessages[a].valueAt(b).messageOwner, currentAccount);
+                                prefs.setDialogId(dialogId);
+                                AyuMessagesController.getInstance().onMessageDeleted(prefs);
+                            }
                         }
                         // --- AyuGram hook
                     }
@@ -8310,7 +8316,7 @@ public class AlertsCreator {
                         }
                     }
                     // --- AyuGram hook
-                    if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+                    if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                         ArrayList<Integer> finalIds = ids;
                         AndroidUtilities.runOnUIThread(() -> {
                             // invalidating views

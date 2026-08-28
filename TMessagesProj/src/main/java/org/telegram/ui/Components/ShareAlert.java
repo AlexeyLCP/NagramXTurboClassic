@@ -147,6 +147,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
+import org.telegram.messenger.BuildVars;
 import xyz.nextalone.nagram.helper.ProtectedForward;
 import xyz.nextalone.nagram.helper.ForwardTextEdit;
 import org.telegram.ui.Components.FilterTabsView;
@@ -3348,7 +3349,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     updateForwardTextCopyNotice();
                     return;
                 }
-                if (sendingMessageObjects != null && ProtectedForward.containsProtected(sendingMessageObjects)
+                if (sendingMessageObjects != null && !BuildVars.TURBO_BASE && ProtectedForward.containsProtected(sendingMessageObjects)
                         && MessageHelper.getInstance(currentAccount).canSendMessagesAsCopy(sendingMessageObjects)) {
                     ProtectedForward.handleProtectedForward(getContext(), resourcesProvider, sendingMessageObjects.size(), () -> sendForwardEditedAsCopy(withSound, scheduleDate, scheduleRepeatPeriod));
                 } else {
@@ -3359,7 +3360,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             exitForwardTextEditMode();
         }
 
-        if (sendingMessageObjects != null && ProtectedForward.containsProtected(sendingMessageObjects)
+        if (sendingMessageObjects != null && !BuildVars.TURBO_BASE && ProtectedForward.containsProtected(sendingMessageObjects)
                 && MessageHelper.getInstance(currentAccount).canSendMessagesAsCopy(sendingMessageObjects)) {
             ProtectedForward.handleProtectedForward(getContext(), resourcesProvider, sendingMessageObjects.size(), () -> sendProtectedAsCopy(withSound, scheduleDate, scheduleRepeatPeriod));
             return;

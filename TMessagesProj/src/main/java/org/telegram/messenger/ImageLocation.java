@@ -139,7 +139,7 @@ public class ImageLocation {
         } else if (photoSize == null || photo == null) {
             return null;
         }
-        if (photoSize.location instanceof AyuFileLocation ayuFileLocation) {
+        if (!BuildVars.TURBO_BASE && photoSize.location instanceof AyuFileLocation ayuFileLocation) {
             return ImageLocation.getForPath(ayuFileLocation.path);
         }
         int dc_id;
@@ -360,7 +360,7 @@ public class ImageLocation {
         } else if (photoSize == null || document == null) {
             return null;
         }
-        if (photoSize.location instanceof AyuFileLocation ayuFileLocation) {
+        if (!BuildVars.TURBO_BASE && photoSize.location instanceof AyuFileLocation ayuFileLocation) {
             return ImageLocation.getForPath(ayuFileLocation.path);
         }
         return getForPhoto(photoSize.location, photoSize.size, null, document, null, TYPE_SMALL, document.dc_id, null, photoSize.type);

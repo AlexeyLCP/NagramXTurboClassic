@@ -1150,7 +1150,7 @@ public class SecretChatHelper extends BaseController {
                 } else if (serviceMessage.action instanceof TLRPC.TL_decryptedMessageActionFlushHistory) {
                     long did = DialogObject.makeEncryptedDialogId(chat.id);
                     // save all messages before flushing encrypted chat history
-                    if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+                    if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                         getMessagesStorage().getStorageQueue().postRunnable(() -> {
                             saveAllMessagesFromEncryptedChat(did);
                             AndroidUtilities.runOnUIThread(() -> performFlushEncryptedHistory(did));
@@ -2057,6 +2057,9 @@ public class SecretChatHelper extends BaseController {
 
     // save deleted start
     private void saveAllMessagesFromEncryptedChat(long dialogId) {
+        if (BuildVars.TURBO_BASE) {
+            return;
+        }
         SQLiteCursor cursor = null;
         NativeByteBuffer data = null;
         try {

@@ -160,7 +160,7 @@ public class UserObject {
         if (server != null && server != 0) {
             return server;
         }
-        return LocalPremiumStatusHelper.getDocumentId(user);
+        return !BuildVars.TURBO_BASE ? LocalPremiumStatusHelper.getDocumentId(user) : null;
     }
 
     public static Long getEmojiStatusDocumentId(TLRPC.EmojiStatus emojiStatus) {

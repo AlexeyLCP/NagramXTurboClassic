@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.radolyn.ayugram.utils.LastSeenHelper;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
@@ -210,7 +211,7 @@ public class ReactedUsersListView extends FrameLayout {
     public ReactedUsersListView setSeenUsers(List<ReactedHeaderView.UserSeen> users) {
         if (userReactions != null && !userReactions.isEmpty()) {
             for (ReactedHeaderView.UserSeen p : users) {
-                if (p == null || ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), p.dialogId)) {
+                if (p == null || !BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), p.dialogId)) {
                     continue;
                 }
                 TLObject user = p.user;
@@ -228,7 +229,7 @@ public class ReactedUsersListView extends FrameLayout {
         }
         List<TLRPC.TL_messagePeerReaction> nr = new ArrayList<>(users.size());
         for (ReactedHeaderView.UserSeen p : users) {
-            if (p == null || ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), p.dialogId)) {
+            if (p == null || !BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), p.dialogId)) {
                 continue;
             }
             ArrayList<TLRPC.MessagePeerReaction> userReactions = peerReactionMap.get(p.dialogId);
@@ -291,12 +292,12 @@ public class ReactedUsersListView extends FrameLayout {
                     TLRPC.TL_messages_messageReactionsList res = (TLRPC.TL_messages_messageReactionsList) response;
                     MessagesController.getInstance(currentAccount).putUsers(res.users, false);
                     MessagesController.getInstance(currentAccount).putChats(res.chats, false);
-                    LastSeenHelper.saveLastSeenFromPeerReactions(res.reactions, UserConfig.getInstance(currentAccount).getClientUserId());
+                    if (!BuildVars.TURBO_BASE) LastSeenHelper.saveLastSeenFromPeerReactions(res.reactions, UserConfig.getInstance(currentAccount).getClientUserId());
 
                     HashSet<ReactionsLayoutInBubble.VisibleReaction> visibleCustomEmojiReactions = new HashSet<>();
                     for (int i = 0; i < res.reactions.size(); i++) {
                         var reaction = res.reactions.get(i);
-                        if (reaction != null && ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), MessageObject.getPeerId(reaction.peer_id))) {
+                        if (reaction != null && !BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, message.getDialogId(), MessageObject.getPeerId(reaction.peer_id))) {
                             continue;
                         }
                         userReactions.add(reaction);
@@ -324,7 +325,7 @@ public class ReactedUsersListView extends FrameLayout {
                     offset = res.next_offset;
                     if (offset == null)
                         canLoadMore = false;
-                    if (userReactions.size() < VISIBLE_ITEMS && canLoadMore && !res.reactions.isEmpty() && ReactionFilter.shouldFilter(currentAccount, message.getDialogId())) {
+                    if (userReactions.size() < VISIBLE_ITEMS && canLoadMore && !res.reactions.isEmpty() && !BuildVars.TURBO_BASE && ReactionFilter.shouldFilter(currentAccount, message.getDialogId())) {
                         isLoading = false;
                         load();
                         return;

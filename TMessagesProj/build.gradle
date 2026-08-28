@@ -60,6 +60,10 @@ if (turboBuildNumber) {
     verCode = verCode * 10000 + turboBuildNumber.toInteger()
 }
 
+// Turbo base build (disputable features stripped) — -PTURBO_BASE=1, env, or local.properties.
+def turboBaseProp = System.getenv('TURBO_BASE') ?: project.findProperty('TURBO_BASE') ?: properties?.getProperty('TURBO_BASE')
+def isTurboBase = turboBaseProp == '1'
+
 def nativeTarget = System.getenv('NATIVE_TARGET') ?: ''
 
 if (nativeTarget == 'SKIP') {
@@ -128,6 +132,7 @@ android {
         buildConfigField 'int', 'APP_ID', appId
         buildConfigField 'String', 'APP_HASH', '"' + appHash + '"'
         buildConfigField 'long', 'BUILD_TIMESTAMP', buildTimestamp + 'L'
+        buildConfigField 'boolean', 'TURBO_BASE', isTurboBase.toString()
 
         externalNativeBuild {
             cmake {
@@ -188,6 +193,9 @@ android {
             shrinkResources = true
             multiDexEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (isTurboBase) {
+                proguardFiles 'proguard-turbo-base.pro'
+            }
             matchingFallbacks = ['release', 'staging', 'debug']
             signingConfig = signingConfigs.release
         }
@@ -199,6 +207,9 @@ android {
             shrinkResources = true
             multiDexEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (isTurboBase) {
+                proguardFiles 'proguard-turbo-base.pro'
+            }
             matchingFallbacks = ['release', 'staging', 'debug']
             signingConfig = signingConfigs.release
         }
@@ -212,7 +223,7 @@ android {
 androidComponents {
     onVariants(selector().all()) { variant ->
         variant.outputs.forEach { output ->
-            String gramName = 'NagramXTurbo'
+            String gramName = isTurboBase ? 'NagramXTurbo_base' : 'NagramXTurbo'
             String first = String.format('%s-v%s-%s', gramName, verName, verCode)
             output.outputFileName.set(
                 output.outputFileName.get()

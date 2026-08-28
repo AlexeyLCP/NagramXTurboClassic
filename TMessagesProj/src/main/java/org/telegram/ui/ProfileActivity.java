@@ -2264,7 +2264,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             } else if (chatInfo == null) {
                 chatInfo = getMessagesStorage().loadChatInfo(chatId, false, null, false, false);
             }
-            channelBlocked = AyuFilter.isBlockedChannel(-chatId);
+            channelBlocked = !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(-chatId);
             updateExceptions();
         } else {
             return false;
@@ -12528,9 +12528,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         if (currentEncryptedChat == null) {
                             createAutoDeleteItem(context);
                         }
-                        createGhostModeExclusionItem(userId);
-                        createSaveExclusionItem(userId);
-                        createMessageFilterItem();
+                        if (!BuildVars.TURBO_BASE) {
+                            createGhostModeExclusionItem(userId);
+                            createSaveExclusionItem(userId);
+                            createMessageFilterItem();
+                        }
                         createExtraItems(otherItem);
                         otherItem.addSubItem(add_shortcut, R.drawable.msg_home, LocaleController.getString(R.string.AddShortcut));
                         if (isBot) {
@@ -12549,7 +12551,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             } else {
                                 otherItem.hideSubItem(bot_privacy);
                             }
-                            if (NekoConfig.ignoreBlocked.Bool()) {
+                            if (!BuildVars.TURBO_BASE && NekoConfig.ignoreBlocked.Bool()) {
                                 boolean customFiltered = AyuFilter.getCustomFilteredUsersList().contains(userId);
                                 otherItem.addSubItem(shadow_ban, R.drawable.hide_title, getString(customFiltered ? R.string.UnshadowBan : R.string.ShadowBan));
                             }
@@ -12560,7 +12562,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                                 otherItem.addSubItem(block_contact, R.drawable.msg_retry, LocaleController.getString(R.string.BotRestart));
                             }
                         } else {
-                            if (NekoConfig.ignoreBlocked.Bool()) {
+                            if (!BuildVars.TURBO_BASE && NekoConfig.ignoreBlocked.Bool()) {
                                 boolean customFiltered = AyuFilter.getCustomFilteredUsersList().contains(userId);
                                 otherItem.addSubItem(shadow_ban, R.drawable.hide_title, getString(customFiltered ? R.string.UnshadowBan : R.string.ShadowBan));
                             }
@@ -12571,14 +12573,16 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     if (currentEncryptedChat == null) {
                         createAutoDeleteItem(context);
                     }
-                    createGhostModeExclusionItem(userId);
-                    createSaveExclusionItem(userId);
-                    createMessageFilterItem();
+                    if (!BuildVars.TURBO_BASE) {
+                        createGhostModeExclusionItem(userId);
+                        createSaveExclusionItem(userId);
+                        createMessageFilterItem();
+                    }
                     createExtraItems(otherItem);
                     if (!TextUtils.isEmpty(user.phone)) {
                         otherItem.addSubItem(share_contact, R.drawable.msg_share, LocaleController.getString(R.string.ShareContact));
                     }
-                    if (NekoConfig.ignoreBlocked.Bool()) {
+                    if (!BuildVars.TURBO_BASE && NekoConfig.ignoreBlocked.Bool()) {
                         boolean customFiltered = AyuFilter.getCustomFilteredUsersList().contains(userId);
                         otherItem.addSubItem(shadow_ban, R.drawable.hide_title, getString(customFiltered ? R.string.UnshadowBan : R.string.ShadowBan));
                     }
@@ -12615,9 +12619,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (topicId == 0 && ChatObject.canChangeChatInfo(chat)) {
                 createAutoDeleteItem(context);
             }
-            createGhostModeExclusionItem(chatId);
-            createSaveExclusionItem(chatId);
-            createMessageFilterItem();
+            if (!BuildVars.TURBO_BASE) {
+                createGhostModeExclusionItem(chatId);
+                createSaveExclusionItem(chatId);
+                createMessageFilterItem();
+            }
             if (chat.forum) {
                 createCustomForumTabsItem();
             }

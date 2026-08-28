@@ -410,12 +410,12 @@ public class ConnectionsManager extends BaseController {
         }
 
         // --- Ghost Mode ---
-        AyuGhostUtils.InterceptResult interceptResult = AyuGhostUtils.interceptRequest(object, onCompleteOrig);
-        if (interceptResult.blockRequest()) {
+        AyuGhostUtils.InterceptResult interceptResult = !BuildVars.TURBO_BASE ? AyuGhostUtils.interceptRequest(object, onCompleteOrig) : null;
+        if (interceptResult != null && interceptResult.blockRequest()) {
             FileLog.d("GhostMode: Request " + object.getClass().getSimpleName() + " blocked by handler.");
             return;
         }
-        final var onComplete = interceptResult.effectiveOnComplete();
+        final var onComplete = interceptResult != null ? interceptResult.effectiveOnComplete() : onCompleteOrig;
         // --- Ghost Mode ---
 
         try {

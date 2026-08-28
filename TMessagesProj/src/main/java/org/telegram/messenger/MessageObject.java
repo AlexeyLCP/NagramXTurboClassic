@@ -734,7 +734,7 @@ public class MessageObject {
         if (messageOwner.reactions == null || messageOwner.reactions.recent_reactions == null || messageOwner.reactions.recent_reactions.isEmpty()) {
             return null;
         }
-        return ReactionFilter.getFirstReaction(currentAccount, getDialogId(), messageOwner.reactions);
+        return !BuildVars.TURBO_BASE ? ReactionFilter.getFirstReaction(currentAccount, getDialogId(), messageOwner.reactions) : messageOwner.reactions.recent_reactions.get(0);
     }
 
     public void markPollVotesAsRead() {
@@ -4012,7 +4012,7 @@ public class MessageObject {
     }
 
     public boolean hasReactions() {
-        return ReactionFilter.hasReactions(currentAccount, messageOwner);
+        return !BuildVars.TURBO_BASE ? ReactionFilter.hasReactions(currentAccount, messageOwner) : messageOwner.reactions != null && !messageOwner.reactions.results.isEmpty();
     }
 
     public boolean hasReaction(ReactionsLayoutInBubble.VisibleReaction reaction) {
@@ -4020,7 +4020,7 @@ public class MessageObject {
         for (int i = 0; i < messageOwner.reactions.results.size(); ++i) {
             TLRPC.ReactionCount rc = messageOwner.reactions.results.get(i);
             if (reaction.isSame(rc.reaction)) {
-                return !ReactionFilter.shouldFilter(currentAccount, messageOwner) || ReactionFilter.getReactionCount(currentAccount, getDialogId(), messageOwner.reactions, rc) > 0;
+                return BuildVars.TURBO_BASE || !ReactionFilter.shouldFilter(currentAccount, messageOwner) || ReactionFilter.getReactionCount(currentAccount, getDialogId(), messageOwner.reactions, rc) > 0;
             }
         }
         return false;

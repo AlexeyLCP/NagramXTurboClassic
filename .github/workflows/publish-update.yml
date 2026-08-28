@@ -87,7 +87,7 @@ jobs:
           echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
           ./gradlew TMessagesProj:assembleStaging
 
-          APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
+          APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk' ! -name '*_base*' | head -1)
           APK_DIR=$(dirname "$APK")
           echo "APK=$APK_DIR" >> $GITHUB_ENV
           BADGING=$(${ANDROID_HOME}/build-tools/36.0.0/aapt2 dump badging "$APK")
@@ -97,6 +97,18 @@ jobs:
         with:
           name: PublishUpdate
           path: ${{ env.APK }}
+      - name: Base Build
+        env:
+          COMMIT_ID: ${{ github.sha }}
+          TURBO_BUILD_NUMBER: ${{ vars.TURBO_BUILD_NUMBER }}
+          BUILD_TIMESTAMP: ${{ steps.build_step.outputs.build_timestamp }}
+        run: |
+          export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
+          ./gradlew TMessagesProj:assembleStaging -PTURBO_BASE=1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PublishUpdateBase
+          path: ${{ env.APK }}/*_base*.apk
 
   publish:
     name: Publish manifest
@@ -166,23 +178,27 @@ jobs:
           RELEASE_NOTES: ${{ steps.changelog.outputs.release_notes }}
         run: |
           printf '%s' "$RELEASE_NOTES" > /tmp/release_notes.md
-          APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
-          APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' | head -1)
-          if [ -n "$APK_ARMV7" ]; then
-            gh release create "v$VERSION_NAME" "$APK_ARM64" "$APK_ARMV7" \
-              --title "$VERSION_NAME" \
-              --notes-file /tmp/release_notes.md \
-              --target "$GITHUB_SHA"
-          else
-            gh release create "v$VERSION_NAME" "$APK_ARM64" \
-              --title "$VERSION_NAME" \
-              --notes-file /tmp/release_notes.md \
-              --target "$GITHUB_SHA"
-          fi
-          ASSET_URL_ARM64=$(gh release view "v$VERSION_NAME" --json assets --jq '[.assets[] | select(.name | contains("arm64-v8a"))][0].url')
-          ASSET_URL_ARMV7=$(gh release view "v$VERSION_NAME" --json assets --jq '[.assets[] | select(.name | contains("armeabi-v7a"))][0].url')
+          APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' ! -name '*_base*' | head -1)
+          APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' ! -name '*_base*' | head -1)
+          APK_BASE_ARM64=$(find artifacts -name '*_base*arm64-v8a*.apk' | head -1)
+          APK_BASE_ARMV7=$(find artifacts -name '*_base*armeabi-v7a*.apk' | head -1)
+          ASSETS=()
+          for f in "$APK_ARM64" "$APK_ARMV7" "$APK_BASE_ARM64" "$APK_BASE_ARMV7"; do
+            [ -n "$f" ] && ASSETS+=("$f")
+          done
+          gh release create "v$VERSION_NAME" "${ASSETS[@]}" \
+            --title "$VERSION_NAME" \
+            --notes-file /tmp/release_notes.md \
+            --target "$GITHUB_SHA"
+          RELEASE_ASSETS=$(gh release view "v$VERSION_NAME" --json assets)
+          ASSET_URL_ARM64=$(jq -r '[.assets[] | select(.name | contains("arm64-v8a") and (contains("_base") | not))][0].url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_ARMV7=$(jq -r '[.assets[] | select(.name | contains("armeabi-v7a") and (contains("_base") | not))][0].url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_BASE_ARM64=$(jq -r '[.assets[] | select(.name | contains("_base") and contains("arm64-v8a"))][0].url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_BASE_ARMV7=$(jq -r '[.assets[] | select(.name | contains("_base") and contains("armeabi-v7a"))][0].url // empty' <<< "$RELEASE_ASSETS")
           echo "url=$ASSET_URL_ARM64" >> "$GITHUB_OUTPUT"
           echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
+          echo "url_base=$ASSET_URL_BASE_ARM64" >> "$GITHUB_OUTPUT"
+          echo "url_base_armv7=$ASSET_URL_BASE_ARMV7" >> "$GITHUB_OUTPUT"
       - name: Publish to Telegram
         env:
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
@@ -195,6 +211,8 @@ jobs:
           COMMIT_MESSAGE: ${{ steps.changelog.outputs.commit_message }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
+          RELEASE_URL_BASE: ${{ steps.release.outputs.url_base }}
+          RELEASE_URL_BASE_ARMEABI_V7A: ${{ steps.release.outputs.url_base_armv7 }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release

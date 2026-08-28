@@ -5,6 +5,7 @@ import android.os.Build;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.messenger.BuildConfig;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.SharedConfig;
@@ -113,11 +114,15 @@ public class UpdateHelper extends BaseRemoteHelper {
                     shouldUpdate = true;
                 }
                 if (shouldUpdate || updateAlways) {
+                    String updateUrlField = BuildVars.TURBO_BASE ? "url_base" : "url";
+                    String urlArm64 = string.optString(updateUrlField, "");
+                    String urlArmeabiV7a = string.optString(updateUrlField + "_armeabi_v7a", "");
+                    if (BuildVars.TURBO_BASE && urlArm64.isEmpty() && urlArmeabiV7a.isEmpty()) {
+                        continue;
+                    }
                     if (updateAlways) {
                         updateAlways = false;
                     }
-                    String urlArm64 = string.optString("url", "");
-                    String urlArmeabiV7a = string.optString("url_armeabi_v7a", "");
                     ref = new Update(
                             string.getBoolean("can_not_skip"),
                             string.getString("version"),

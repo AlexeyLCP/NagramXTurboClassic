@@ -3024,7 +3024,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         additionNavigationBarHeight = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
         additionFloatingButtonOffset = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeight() + MainTabsHelper.getMainTabsMargin()) : 0;
 
-        LastSeenHelper.preload();
+        if (!BuildVars.TURBO_BASE) {
+            LastSeenHelper.preload();
+        }
 
         return true;
     }
@@ -3058,7 +3060,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (statusDrawable == null || actionBar == null) {
             return;
         }
-        if (NekoConfig.isGhostModeActive() && NekoConfig.showGhostModeStatus.Bool()) {
+        if (!BuildVars.TURBO_BASE && NekoConfig.isGhostModeActive() && NekoConfig.showGhostModeStatus.Bool()) {
             if (ghostDrawable == null) {
                 ghostDrawable = getContext().getResources().getDrawable(R.drawable.ayu_ghost).mutate();
                 ghostDrawable = new AnimatedEmojiDrawable.WrapSizeDrawable(ghostDrawable, dp(20), dp(20)) {
@@ -14003,7 +14005,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             if (NaConfig.INSTANCE.getShowAddToBookmark().Bool()) {
                 io.add(R.drawable.msg_fave, getString(R.string.BookmarksManager), () -> presentFragment(new BookmarkManagerActivity()));
             }
-            if (NekoConfig.showGhostInDrawer.Bool()) {
+            if (!BuildVars.TURBO_BASE && NekoConfig.showGhostInDrawer.Bool()) {
                 final String ghostModeText = NekoConfig.isGhostModeActive()
                         ? getString(R.string.DisableGhostMode)
                         : getString(R.string.EnableGhostMode);

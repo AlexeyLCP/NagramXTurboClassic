@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.ImageLocation;
@@ -122,7 +123,7 @@ public class MessageSeenView extends FrameLayout {
                         if (finalFromId == peerId) {
                             continue;
                         }
-                        if (ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), peerId)) {
+                        if (!BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), peerId)) {
                             continue;
                         }
                         TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(peerId);
@@ -137,7 +138,7 @@ public class MessageSeenView extends FrameLayout {
                         if (finalFromId == peerId) {
                             continue;
                         }
-                        if (ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), peerId)) {
+                        if (!BuildVars.TURBO_BASE && ReactionFilter.isBlockedPeer(currentAccount, messageObject.getDialogId(), peerId)) {
                             continue;
                         }
                         if (peerId > 0) {

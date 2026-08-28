@@ -60,6 +60,7 @@ import androidx.core.graphics.ColorUtils;
 import androidx.core.math.MathUtils;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ChatThemeController;
@@ -1712,7 +1713,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                         drawCount2 = true;
                         boolean lastMessageIsReaction = false;
                         if (dialogsType == 0 && currentDialogId > 0 && message.isOutOwner() && message.messageOwner.reactions != null && message.messageOwner.reactions.recent_reactions != null && !message.messageOwner.reactions.recent_reactions.isEmpty() && reactionMentionCount > 0) {
-                            TLRPC.MessagePeerReaction lastReaction = ReactionFilter.getFirstReaction(currentAccount, message.getDialogId(), message.messageOwner.reactions);
+                            TLRPC.MessagePeerReaction lastReaction = !BuildVars.TURBO_BASE ? ReactionFilter.getFirstReaction(currentAccount, message.getDialogId(), message.messageOwner.reactions) : message.messageOwner.reactions.recent_reactions.get(0);
                             long lastReactionPeerId = lastReaction == null ? 0L : MessageObject.getPeerId(lastReaction.peer_id);
                             if (lastReaction != null && lastReaction.unread && lastReactionPeerId > 0 && lastReactionPeerId != UserConfig.getInstance(currentAccount).clientUserId) {
                                 lastMessageIsReaction = true;
@@ -2155,7 +2156,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     } else {
                         drawMention = false;
                     }
-                    drawReactionMention = ReactionFilter.shouldShowReactionMention(currentAccount, reactionMentionCount, message);
+                    drawReactionMention = !BuildVars.TURBO_BASE ? ReactionFilter.shouldShowReactionMention(currentAccount, reactionMentionCount, message) : reactionMentionCount > 0;
                     drawPollVotesMention = pollVotesMentionCount > 0;
                 }
 
@@ -3286,19 +3287,19 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                             boolean needsReplyTargetCheck = false;
                             if (NekoConfig.ignoreBlocked.Bool() && ChatObject.isMegagroup(MessagesController.getInstance(currentAccount).getChat(-dialog.id))) {
                                 blocked = MessagesController.getInstance(currentAccount).blockePeers.indexOfKey(message.getFromChatId()) >= 0;
-                                blocked = blocked || AyuFilter.isCustomFilteredPeer(message.getFromChatId());
-                                blocked = blocked || AyuFilter.isBlockedChannel(message.getFromChatId());
+                                blocked = blocked || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(message.getFromChatId());
+                                blocked = blocked || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(message.getFromChatId());
                                 if (message.replyMessageObject != null) {
                                     long fromId = message.replyMessageObject.getFromChatId();
                                     replyBlocked = MessagesController.getInstance(currentAccount).blockePeers.indexOfKey(fromId) >= 0;
-                                    replyBlocked = replyBlocked || AyuFilter.isCustomFilteredPeer(fromId);
-                                    replyBlocked = replyBlocked || AyuFilter.isBlockedChannel(fromId);
+                                    replyBlocked = replyBlocked || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(fromId);
+                                    replyBlocked = replyBlocked || !BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(fromId);
                                 } else if (message.getReplyMsgId() != 0) {
                                     // reply sender is unresolved in the in-memory preview message, fallback to async DB lookup
                                     needsReplyTargetCheck = true;
                                 }
                             }
-                            boolean hardFiltered = blocked || replyBlocked || AyuFilter.isFiltered(message, null);
+                            boolean hardFiltered = blocked || replyBlocked || !BuildVars.TURBO_BASE && AyuFilter.isFiltered(message, null);
                             boolean softReplyCheckPending = needsReplyTargetCheck && !hardFiltered;
                             boolean inNullRetryCooldown = lastFilteredNullMessageId == currentMessageId && System.currentTimeMillis() - lastFilteredNullTime < FILTERED_NULL_RETRY_COOLDOWN_MS;
                             if (hardFiltered || softReplyCheckPending) {
@@ -5674,7 +5675,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             sb.append(LocaleController.formatPluralString("AccDescrMentionCount", mentionCount));
             sb.append(". ");
         }
-        if (ReactionFilter.shouldShowReactionMention(currentAccount, reactionMentionCount, message)) {
+        if (BuildVars.TURBO_BASE ? reactionMentionCount > 0 : ReactionFilter.shouldShowReactionMention(currentAccount, reactionMentionCount, message)) {
             sb.append(getString(R.string.AccDescrMentionReaction));
             sb.append(". ");
         }

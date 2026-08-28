@@ -41,6 +41,7 @@ import androidx.core.content.ContextCompat;
 import com.radolyn.ayugram.utils.LastSeenHelper;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
@@ -723,7 +724,7 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                     if (timeItem != null && !monoforum) {
                         args.putLong("dialog_id", parentFragment.getDialogId());
                     }
-                    if (!user.bot) LastSeenHelper.saveLastSeenFromLoadedMessages(user.id, UserConfig.getInstance(parentFragment.getCurrentAccount()).getClientUserId(), parentFragment.messages, parentFragment.chatAdapter);
+                    if (!BuildVars.TURBO_BASE && !user.bot) LastSeenHelper.saveLastSeenFromLoadedMessages(user.id, UserConfig.getInstance(parentFragment.getCurrentAccount()).getClientUserId(), parentFragment.messages, parentFragment.chatAdapter);
                 }
                 if (UserObject.isBotForum(user)) {
                     args.putLong("topic_id", parentFragment.getTopicId());

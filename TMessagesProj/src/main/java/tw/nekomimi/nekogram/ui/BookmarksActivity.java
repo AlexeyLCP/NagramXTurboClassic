@@ -36,6 +36,7 @@ import com.radolyn.ayugram.messages.AyuMessagesController;
 import com.radolyn.ayugram.proprietary.AyuMessageUtils;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLoader;
@@ -216,7 +217,7 @@ public class BookmarksActivity extends NekoDelegateFragment {
                     if (messageObject.messageOwner.media != null) {
                         messageObject.messageOwner.media.ttl_seconds = 0;
                     }
-                } else if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+                } else if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
                     DeletedMessageFull deleted = AyuMessagesController.getInstance().getMessage(userId, dialogId, messageId);
                     if (hasAyuDeletedContent(deleted)) {
                         var base = deleted.message;

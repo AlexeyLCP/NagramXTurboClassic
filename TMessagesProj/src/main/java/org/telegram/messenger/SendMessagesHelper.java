@@ -1709,8 +1709,10 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             } else if (scheduled) {
                 mode = ChatActivity.MODE_SCHEDULED;
             }
-            for (int i = 0; i < messageIds.size(); i++) {
-                AyuState.permitDeleteMessage(dialogId, messageIds.get(i));
+            if (!BuildVars.TURBO_BASE) {
+                for (int i = 0; i < messageIds.size(); i++) {
+                    AyuState.permitDeleteMessage(dialogId, messageIds.get(i));
+                }
             }
             getMessagesController().deleteMessages(messageIds, null, null, dialogId, topicId, false, mode);
         }
@@ -3876,7 +3878,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             req.big = true;
         }
         // --- Ghost Mode ---
-        if (req.msg_id != 0 && NekoConfig.markReadAfterSend.Bool() && !NekoConfig.sendReadMessagePackets.Bool()) {
+        if (!BuildVars.TURBO_BASE && req.msg_id != 0 && NekoConfig.markReadAfterSend.Bool() && !NekoConfig.sendReadMessagePackets.Bool()) {
             if (!AyuGhostPreferences.getGhostModeReadExclusion(AyuGhostUtils.getDialogId(req.peer))) {
                 AyuGhostUtils.markReadOnServer(req.msg_id, req.peer, false);
             }

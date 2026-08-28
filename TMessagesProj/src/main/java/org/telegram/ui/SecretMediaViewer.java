@@ -75,6 +75,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
@@ -1523,7 +1524,7 @@ public class SecretMediaViewer implements NotificationCenter.NotificationCenterD
                 } else {
                     File file = FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner);
                     File encryptedFile = file != null ? new File(file.getAbsolutePath() + ".enc") : null;
-                    if (encryptedFile != null && encryptedFile.exists()) {
+                    if (!BuildVars.TURBO_BASE && encryptedFile != null && encryptedFile.exists()) {
                         // save deleted: try to decrypt and save to attachments path for persistence
                         File decryptedFile = AyuMessageUtils.decryptAndSaveMedia(file.getName(), encryptedFile, messageObject);
                         if (decryptedFile != null && decryptedFile.exists() && decryptedFile.length() > 0) {
@@ -1550,7 +1551,7 @@ public class SecretMediaViewer implements NotificationCenter.NotificationCenterD
             // save deleted: try to decrypt and save photo to attachments path for persistence
             File photoFile = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, true);
             File encryptedPhotoFile = new File(photoFile.getAbsolutePath() + ".enc");
-            if (encryptedPhotoFile.exists()) {
+            if (!BuildVars.TURBO_BASE && encryptedPhotoFile.exists()) {
                 File decryptedFile = AyuMessageUtils.decryptAndSaveMedia(photoFile.getName(), encryptedPhotoFile, messageObject);
                 if (decryptedFile != null && decryptedFile.exists() && decryptedFile.length() > 0) {
                     centerImage.setImage(decryptedFile.getAbsolutePath(), null, currentThumb != null ? new BitmapDrawable(currentThumb.bitmap) : null, "jpg", 0);

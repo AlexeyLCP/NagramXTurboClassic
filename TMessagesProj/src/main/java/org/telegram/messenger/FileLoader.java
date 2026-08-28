@@ -1430,16 +1430,18 @@ public class FileLoader extends BaseController {
         }
 
         // --- AyuGram hook
-        if (attach instanceof TLRPC.PhotoSize photoSize) {
-            if (photoSize.location instanceof AyuFileLocation) {
-                return new File(((AyuFileLocation) photoSize.location).path);
+        if (!BuildVars.TURBO_BASE) {
+            if (attach instanceof TLRPC.PhotoSize photoSize) {
+                if (photoSize.location instanceof AyuFileLocation) {
+                    return new File(((AyuFileLocation) photoSize.location).path);
+                }
+            } else if (attach instanceof TLRPC.TL_videoSize videoSize) {
+                if (videoSize.location instanceof AyuFileLocation) {
+                    return new File(((AyuFileLocation) videoSize.location).path);
+                }
+            } else if (attach instanceof AyuFileLocation ayuFileLocation) {
+                return new File(ayuFileLocation.path);
             }
-        } else if (attach instanceof TLRPC.TL_videoSize videoSize) {
-            if (videoSize.location instanceof AyuFileLocation) {
-                return new File(((AyuFileLocation) videoSize.location).path);
-            }
-        } else if (attach instanceof AyuFileLocation ayuFileLocation) {
-            return new File(ayuFileLocation.path);
         }
         // --- AyuGram hook
 

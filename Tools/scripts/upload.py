@@ -88,6 +88,10 @@ def format_apk_download_label(arch, version_name):
     return label
 
 
+def apk_link_html(url, label):
+    return '<a href="' + html.escape(url, quote=False) + '">' + html.escape(label) + '</a>\n\n'
+
+
 def build_headline_block():
     headline = normalize_message(os.environ.get("CHANGELOG_HEADLINE", "").strip())
     if not headline:
@@ -114,6 +118,8 @@ def get_caption(test_version):
     caption = html.escape(label) + "\n\n"
     release_url = os.environ.get("RELEASE_URL", "")
     release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A", "")
+    release_url_base = os.environ.get("RELEASE_URL_BASE", "")
+    release_url_base_armv7 = os.environ.get("RELEASE_URL_BASE_ARMEABI_V7A", "")
     headline_block = build_headline_block()
     if headline_block:
         caption += headline_block + "\n\n"
@@ -121,10 +127,17 @@ def get_caption(test_version):
     tail = "</blockquote>\n\n"
     if release_url:
         apk_label = format_apk_download_label("64-bit, arm64-v8a", version_name)
-        tail += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
+        tail += apk_link_html(release_url, apk_label)
     if release_url_armv7:
         apk_label = format_apk_download_label("32-bit, armeabi-v7a", version_name)
-        tail += '<a href="' + html.escape(release_url_armv7, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
+        tail += apk_link_html(release_url_armv7, apk_label)
+    if release_url_base:
+        tail += '<i>Base build — the same app without the disputable features:</i>\n\n'
+        apk_label = format_apk_download_label("Base, 64-bit, arm64-v8a", version_name)
+        tail += apk_link_html(release_url_base, apk_label)
+    if release_url_base_armv7:
+        apk_label = format_apk_download_label("Base, 32-bit, armeabi-v7a", version_name)
+        tail += apk_link_html(release_url_base_armv7, apk_label)
     tail += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
     tail += get_ai_summary()
     caption += build_changelog_blockquote(4096 - len(caption) - len(tail) - 64) + tail
@@ -177,6 +190,8 @@ def build_manifest(sticker_id, changelog_id):
     version_name = os.environ.get("VERSION_NAME") or "unknown"
     release_url = os.environ.get("RELEASE_URL") or ""
     release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A") or ""
+    release_url_base = os.environ.get("RELEASE_URL_BASE") or ""
+    release_url_base_armv7 = os.environ.get("RELEASE_URL_BASE_ARMEABI_V7A") or ""
     manifest = {
         "build_timestamp": build_ts,
         "can_not_skip": False,
@@ -190,6 +205,8 @@ def build_manifest(sticker_id, changelog_id):
         "document": {"arm64-v8a": changelog_id},
         "url": release_url,
         "url_armeabi_v7a": release_url_armv7,
+        "url_base": release_url_base,
+        "url_base_armeabi_v7a": release_url_base_armv7,
     }
     return json.dumps(manifest, indent=4)
 

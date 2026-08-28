@@ -30,9 +30,13 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.LaunchActivity;
 
 import java.io.File;
+import org.telegram.messenger.BuildVars;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -195,17 +199,19 @@ public final class SettingsBackupHelper {
             configTypes.putAll(NaConfig.INSTANCE.getConfigTypes());
         } catch (Throwable ignore) {
         }
-        String[] preservePrefixes = {
-                AyuGhostPreferences.ghostReadExclusionPrefix,
-                AyuGhostPreferences.ghostTypingExclusionPrefix,
-                AyuSavePreferences.saveExclusionPrefix,
+        List<String> preservePrefixesToKeep = new ArrayList<>(Arrays.asList(
                 LocalNameHelper.chatNameOverridePrefix,
                 LocalNameHelper.userNameOverridePrefix,
                 DialogConfig.customForumTabPrefix,
                 LocalPeerColorHelper.KEY_PREFIX,
-                LocalPremiumStatusHelper.KEY_PREFIX,
                 BookmarksHelper.KEY_PREFIX
-        };
+        ));
+        if (!BuildVars.TURBO_BASE) {
+            preservePrefixesToKeep.add(AyuGhostPreferences.ghostReadExclusionPrefix);
+            preservePrefixesToKeep.add(AyuGhostPreferences.ghostTypingExclusionPrefix);
+            preservePrefixesToKeep.add(AyuSavePreferences.saveExclusionPrefix);
+            preservePrefixesToKeep.add(LocalPremiumStatusHelper.KEY_PREFIX);
+        }
 
         for (Map.Entry<String, JsonElement> element : configJson.entrySet()) {
             String spName = element.getKey();
@@ -222,7 +228,7 @@ public final class SettingsBackupHelper {
                 JsonPrimitive value = config.getValue().getAsJsonPrimitive();
                 if ("nkmrcfg".equals(spName)) {
                     boolean shouldSkip = true;
-                    for (String prefix : preservePrefixes) {
+                    for (String prefix : preservePrefixesToKeep) {
                         if (key.startsWith(prefix)) {
                             shouldSkip = false;
                             break;

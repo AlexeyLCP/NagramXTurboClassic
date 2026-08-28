@@ -34,6 +34,7 @@ import android.util.Xml;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.time.FastDateFormat;
 import org.telegram.tgnet.Vector;
 import org.telegram.ui.Components.TypefaceSpan;
@@ -3097,13 +3098,13 @@ public class LocaleController {
                 if (user.status.expires == -1) {
                     return getString("Invisible", R.string.Invisible);
                 } else if (user.status.expires == -100 || user.status.expires == -1000) {
-                    return LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.Lately));
+                    return !BuildVars.TURBO_BASE ? LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.Lately)) : getString(R.string.Lately);
                     // return getString("Lately", R.string.Lately);
                 } else if (user.status.expires == -101 || user.status.expires == -1001) {
-                    return LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.WithinAWeek));
+                    return !BuildVars.TURBO_BASE ? LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.WithinAWeek)) : getString(R.string.WithinAWeek);
                     // return getString("WithinAWeek", R.string.WithinAWeek);
                 } else if (user.status.expires == -102 || user.status.expires == -1002) {
-                    return LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.WithinAMonth));
+                    return !BuildVars.TURBO_BASE ? LastSeenHelper.getFormattedLastSeenOrDefault(user, madeShorter, getString(R.string.WithinAMonth)) : getString(R.string.WithinAMonth);
                     // return getString("WithinAMonth", R.string.WithinAMonth);
                 } else {
                     return formatDateOnline(user.status.expires, madeShorter);

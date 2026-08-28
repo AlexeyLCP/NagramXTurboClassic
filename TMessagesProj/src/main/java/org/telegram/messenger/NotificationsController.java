@@ -1085,13 +1085,13 @@ public class NotificationsController extends BaseController implements Notificat
                     }
                     continue;
                 }
-                if (NekoConfig.ignoreBlocked.Bool() && (getMessagesController().blockePeers.indexOfKey(messageObject.getFromChatId()) >= 0 || AyuFilter.isCustomFilteredPeer(messageObject.getFromChatId()))) {
+                if (NekoConfig.ignoreBlocked.Bool() && (getMessagesController().blockePeers.indexOfKey(messageObject.getFromChatId()) >= 0 || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(messageObject.getFromChatId()))) {
                     continue;
                 }
-                if (AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
+                if (!BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
                     continue;
                 }
-                if (!messageObject.isOauthPush && AyuFilter.isFiltered(messageObject, null)) {
+                if (!messageObject.isOauthPush && !BuildVars.TURBO_BASE && AyuFilter.isFiltered(messageObject, null)) {
                     continue;
                 }
                 if (messageObject.isStoryPush) {
@@ -5293,13 +5293,13 @@ public class NotificationsController extends BaseController implements Notificat
                         FileLog.d("showExtraNotifications: ["+dialogId+"] continue; topic id is not equal: topicId=" + topicId + " messageTopicId=" + messageTopicId + "; selfId=" + getUserConfig().getClientUserId());
                         continue;
                     }
-                    if (NekoConfig.ignoreBlocked.Bool() && (getMessagesController().blockePeers.indexOfKey(messageObject.getFromChatId()) >= 0 || AyuFilter.isCustomFilteredPeer(messageObject.getFromChatId()))) {
+                    if (NekoConfig.ignoreBlocked.Bool() && (getMessagesController().blockePeers.indexOfKey(messageObject.getFromChatId()) >= 0 || !BuildVars.TURBO_BASE && AyuFilter.isCustomFilteredPeer(messageObject.getFromChatId()))) {
                         continue;
                     }
-                    if (AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
+                    if (!BuildVars.TURBO_BASE && AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
                         continue;
                     }
-                    if (!messageObject.isOauthPush && AyuFilter.isFiltered(messageObject, null)) {
+                    if (!messageObject.isOauthPush && !BuildVars.TURBO_BASE && AyuFilter.isFiltered(messageObject, null)) {
                         continue;
                     }
                     String message = getShortStringForMessage(messageObject, senderName, preview);

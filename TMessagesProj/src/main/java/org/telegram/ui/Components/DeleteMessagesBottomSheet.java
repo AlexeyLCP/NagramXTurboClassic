@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.radolyn.ayugram.utils.AyuState;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.BotWebViewVibrationEffect;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
@@ -1264,14 +1265,18 @@ public class DeleteMessagesBottomSheet extends BottomSheetWithRecyclerListView {
             }
         } else {
             if (!supergroupMessageIds.isEmpty()) {
-                for (int i = 0; i < supergroupMessageIds.size(); i++) {
-                AyuState.permitDeleteMessage(-inChat.id, supergroupMessageIds.get(i));
-            }
+                if (!BuildVars.TURBO_BASE) {
+                    for (int i = 0; i < supergroupMessageIds.size(); i++) {
+                        AyuState.permitDeleteMessage(-inChat.id, supergroupMessageIds.get(i));
+                    }
+                }
             MessagesController.getInstance(currentAccount).deleteMessages(supergroupMessageIds, null, null, -inChat.id, topicId, false, mode);
         }
         if (!groupMessageIds.isEmpty()) {
-            for (int i = 0; i < groupMessageIds.size(); i++) {
-                AyuState.permitDeleteMessage(mergeDialogId, groupMessageIds.get(i));
+            if (!BuildVars.TURBO_BASE) {
+                for (int i = 0; i < groupMessageIds.size(); i++) {
+                    AyuState.permitDeleteMessage(mergeDialogId, groupMessageIds.get(i));
+                }
             }
                 MessagesController.getInstance(currentAccount).deleteMessages(groupMessageIds, null, null, mergeDialogId, topicId, true, mode);
             }
