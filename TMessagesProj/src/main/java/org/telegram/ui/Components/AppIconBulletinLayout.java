@@ -16,6 +16,7 @@ import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
 import org.telegram.ui.LauncherIconController;
+import xyz.nextalone.nagram.NaConfig;
 
 @SuppressLint("ViewConstructor")
 public class AppIconBulletinLayout extends Bulletin.ButtonLayout {
@@ -34,12 +35,11 @@ public class AppIconBulletinLayout extends Bulletin.ButtonLayout {
         textView.setTypeface(Typeface.SANS_SERIF);
         addView(textView, LayoutHelper.createFrameRelatively(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.START | Gravity.CENTER_VERTICAL, 56, 0, 16, 0));
 
-        // NekoX: try to fix NekoX icon
-        imageView.setImageDrawable(ContextCompat.getDrawable(context, icon.background));
-        imageView.setOuterPadding(AndroidUtilities.dp(8));
         imageView.setBackgroundOuterPadding(AndroidUtilities.dp(24));
-        imageView.setForeground(icon.foreground);
-        imageView.setIsNekoXIcon(icon.isNekoX());
+        boolean modern = icon.modernKey != null && NaConfig.INSTANCE.getModernClassicIcons().Bool();
+        imageView.setImageResource(modern ? icon.modernBackground : icon.background);
+        imageView.setForeground(modern ? icon.modernForeground : icon.foreground);
+        imageView.setCircleClip(icon.modernKey != null && !modern);
         textView.setText(AndroidUtilities.replaceTags(LocaleController.formatString(R.string.AppIconChangedTo, LocaleController.getString(icon.title))));
     }
 }

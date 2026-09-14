@@ -22,6 +22,8 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import org.telegram.ui.LauncherIconController;
+
 import xyz.nextalone.nagram.NaConfig;
 
 public class NotificationsService extends Service {
@@ -42,7 +44,7 @@ public class NotificationsService extends Service {
 //                    .setContentIntent(explainPendingIntent)
                     .setShowWhen(false)
                     .setOngoing(true)
-                    .setSmallIcon(R.drawable.neko_notification)
+                    .setSmallIcon(LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()))
                     .setContentText(LocaleController.getString(R.string.NagramXPushService))
                     .build();
             try {

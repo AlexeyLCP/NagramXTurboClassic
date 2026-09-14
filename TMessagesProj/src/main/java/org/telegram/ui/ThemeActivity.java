@@ -80,6 +80,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeColors;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
+import xyz.nextalone.nagram.NaConfig;
 import org.telegram.ui.Cells.BrightnessControlCell;
 import org.telegram.ui.Cells.ChatListCell;
 import org.telegram.ui.Cells.ChatMessageCell;
@@ -238,6 +239,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     @Keep
     private int appIconSelectorRow;
     private int appIconShadowRow;
+    private int modernClassicRow;
 
     private int rowCount;
 
@@ -616,6 +618,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         appIconHeaderRow = -1;
         appIconSelectorRow = -1;
         appIconShadowRow = -1;
+        modernClassicRow = -1;
         lastShadowRow = -1;
 
         defaultThemes.clear();
@@ -680,6 +683,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
             appIconHeaderRow = rowCount++;
             appIconSelectorRow = rowCount++;
+            modernClassicRow = rowCount++;
             appIconShadowRow = rowCount++;
 
             swipeGestureHeaderRow = rowCount++;
@@ -1129,6 +1133,18 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 presentFragment(new WallpapersListActivity(WallpapersListActivity.TYPE_ALL));
             } else if (position == changeUserColor) {
                 presentFragment(new PeerColorActivity(0).setOnApplied(this));
+            } else if (position == modernClassicRow) {
+                boolean isEnabled = !NaConfig.INSTANCE.getModernClassicIcons().Bool();
+                NaConfig.INSTANCE.getModernClassicIcons().setConfigBool(isEnabled);
+                LauncherIconController.setIcon(LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon());
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(isEnabled);
+                }
+                for (int i = 0; i < listView.getChildCount(); i++) {
+                    if (listView.getChildAt(i) instanceof AppIconsSelectorCell) {
+                        ((AppIconsSelectorCell) listView.getChildAt(i)).notifyIconsChanged();
+                    }
+                }
             } else if (position == sendByEnterRow) {
                 SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                 boolean send = preferences.getBoolean("send_by_enter", false);
@@ -1550,6 +1566,12 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         builder.setNegativeButton(getString("Cancel", R.string.Cancel), null);
         builder.setPositiveButton(getString("CreateTheme", R.string.CreateTheme), (dialog, which) -> AlertsCreator.createThemeCreateDialog(ThemeActivity.this, 0, null, null));
         showDialog(builder.create());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LauncherIconController.applyPendingIcon();
     }
 
     @Override
@@ -2613,6 +2635,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                     } else if (position == enableAnimationsRow) {
                         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                         textCheckCell.setTextAndCheck(getString("EnableAnimations", R.string.EnableAnimations), preferences.getBoolean("view_animations", true), true);
+                    } else if (position == modernClassicRow) {
+                        textCheckCell.setTextAndValueAndCheck(getString("ModernClassicIcons", R.string.ModernClassicIcons), getString("ModernClassicIconsAbout", R.string.ModernClassicIconsAbout), NaConfig.INSTANCE.getModernClassicIcons().Bool(), false, true);
                     } else if (position == sendByEnterRow) {
                         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                         textCheckCell.setTextAndCheck(getString("SendByEnter", R.string.SendByEnter), preferences.getBoolean("send_by_enter", false), true);
@@ -2763,7 +2787,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 return TYPE_HEADER;
             } else if (position == automaticBrightnessRow) {
                 return TYPE_BRIGHTNESS;
-            } else if (position == scheduleLocationRow || position == sendByEnterRow ||
+            } else if (position == modernClassicRow || position == scheduleLocationRow || position == sendByEnterRow ||
                     position == raiseToSpeakRow || position == raiseToListenRow || position == pauseOnRecordRow ||
                     position == directShareRow || position == chatBlurRow || position == pauseOnMediaRow || position == nextMediaTapRow || position == sensitiveContentRow) {
                 return TYPE_TEXT_CHECK;
@@ -2899,7 +2923,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             for (int i = 0; i < listView.getChildCount(); i++) {
                 View ch = listView.getChildAt(i);
                 if (ch instanceof AppIconsSelectorCell) {
-                    ((AppIconsSelectorCell) ch).getAdapter().notifyDataSetChanged();
+                    ((AppIconsSelectorCell) ch).notifyIconsChanged();
                 } else if (ch instanceof PeerColorActivity.ChangeNameColorCell) {
                     ((PeerColorActivity.ChangeNameColorCell) ch).updateColors();
                 }
@@ -2907,7 +2931,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             for (int i = 0; i < listView.getCachedChildCount(); i++) {
                 View ch = listView.getCachedChildAt(i);
                 if (ch instanceof AppIconsSelectorCell) {
-                    ((AppIconsSelectorCell) ch).getAdapter().notifyDataSetChanged();
+                    ((AppIconsSelectorCell) ch).notifyIconsChanged();
                 } else if (ch instanceof PeerColorActivity.ChangeNameColorCell) {
                     ((PeerColorActivity.ChangeNameColorCell) ch).updateColors();
                 }
@@ -2915,7 +2939,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             for (int i = 0; i < listView.getHiddenChildCount(); i++) {
                 View ch = listView.getHiddenChildAt(i);
                 if (ch instanceof AppIconsSelectorCell) {
-                    ((AppIconsSelectorCell) ch).getAdapter().notifyDataSetChanged();
+                    ((AppIconsSelectorCell) ch).notifyIconsChanged();
                 } else if (ch instanceof PeerColorActivity.ChangeNameColorCell) {
                     ((PeerColorActivity.ChangeNameColorCell) ch).updateColors();
                 }
@@ -2923,7 +2947,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             for (int i = 0; i < listView.getAttachedScrapChildCount(); i++) {
                 View ch = listView.getAttachedScrapChildAt(i);
                 if (ch instanceof AppIconsSelectorCell) {
-                    ((AppIconsSelectorCell) ch).getAdapter().notifyDataSetChanged();
+                    ((AppIconsSelectorCell) ch).notifyIconsChanged();
                 } else if (ch instanceof PeerColorActivity.ChangeNameColorCell) {
                     ((PeerColorActivity.ChangeNameColorCell) ch).updateColors();
                 }

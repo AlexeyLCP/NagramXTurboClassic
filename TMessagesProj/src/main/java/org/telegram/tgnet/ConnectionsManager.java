@@ -48,7 +48,6 @@ import org.telegram.messenger.StatsController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.Components.VideoPlayer;
-import org.telegram.ui.LoginActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

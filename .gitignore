@@ -28,3 +28,8 @@ TMessagesProj/release/
 # Firebase config — never commit (migrate to GOOGLE_SERVICES secret)
 TMessagesProj/google-services.json
 TMessagesProj/jni/ffmpeg/build_android
+
+# Local temp environment
+temp/
+*.swp
+BLOCK_REVIEW.md

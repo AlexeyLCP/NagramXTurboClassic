@@ -275,6 +275,7 @@ public class ApplicationLoader extends Application {
         SharedConfig.loadConfig();
         NekoConfig.init();
         NaConfig.init();
+        LauncherIconController.tryFixLauncherIconIfNeeded();
         SharedPrefsHelper.init(applicationContext);
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(AndroidUtil.shouldEnableCrashlytics());
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) { //TODO improve account

@@ -6,7 +6,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.util.TypedValue;
@@ -14,11 +17,13 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.radolyn.ayugram.AyuConstants;
@@ -32,15 +37,19 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.NotificationsController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
+import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Cells.AppIconsSelectorCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckBoxCell;
 import org.telegram.ui.Cells.TextSettingsCell;
+import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.ItemOptions;
@@ -56,6 +65,7 @@ import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceWrapped;
 import org.telegram.ui.Components.chat.WallpaperBitmapProvider;
 import org.telegram.ui.Components.ActionButtonStyle;
 import org.telegram.ui.LaunchActivity;
+import org.telegram.ui.LauncherIconController;
 import org.telegram.ui.ActionBar.BottomSheet;
 
 import java.io.File;
@@ -81,7 +91,7 @@ import xyz.nextalone.nagram.helper.ProtectedForward;
 
 @SuppressLint("RtlHardcoded")
 @SuppressWarnings("unused")
-public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
+public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements NotificationCenter.NotificationCenterDelegate {
 
     @Override
     protected RecyclerListView.SelectionAdapter getListAdapter() {
@@ -100,7 +110,16 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
 
     private final CellGroup cellGroup = new CellGroup(this);
 
-    // Input Bar
+    private final AbstractConfigCell headerAppIcon = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.AppIcon)));
+    private final AbstractConfigCell appIconPickerRow = cellGroup.appendCell(new ConfigCellCustom("AppIconPicker", ConfigCellCustom.CUSTOM_ITEM_AppIconPicker, true));
+    private final AbstractConfigCell modernClassicIconsRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getModernClassicIcons(), getString(R.string.ModernClassicIconsAbout)));
+    private final AbstractConfigCell notificationPreviewRow = cellGroup.appendCell(new ConfigCellCustom("NotificationPreview", ConfigCellCustom.CUSTOM_ITEM_NotificationPreview, true));
+    private final AbstractConfigCell notificationMarksRow = cellGroup.appendCell(new ConfigCellCustom("NotificationMarksPicker", ConfigCellCustom.CUSTOM_ITEM_NotificationMarksPicker, true));
+    private final AbstractConfigCell dividerAppIcon = cellGroup.appendCell(new ConfigCellDivider());
+    private AppIconsSelectorCell appIconsSelectorCell;
+    private NotificationPreviewCell notificationPreviewCell;
+    private NotificationMarksCell notificationMarksCell;
+
     private final AbstractConfigCell headerInputBar = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.InputBar)));
     private final AbstractConfigCell inputBarPreviewRow = cellGroup.appendCell(new ConfigCellCustom("InputBarPreview", ConfigCellCustom.CUSTOM_ITEM_InputBarPreview, false));
     private final AbstractConfigCell iosButtonPlacementRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosButtonPlacement()));
@@ -117,7 +136,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     }, null));
     private final AbstractConfigCell dividerInputBar = cellGroup.appendCell(new ConfigCellDivider());
 
-    // Media
     private final AbstractConfigCell headerMedia = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.MediaSettings)));
     private final AbstractConfigCell swipeAllMediaRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSwipeAllMedia(), getString(R.string.SwipeAllMediaAbout)));
     private final AbstractConfigCell seamlessVideoHandoffRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSeamlessVideoHandoff(), getString(R.string.SeamlessVideoHandoffAbout)));
@@ -135,7 +153,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell photoViewerHdrRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.photoViewerHdr, getString(R.string.PhotoViewerHdrAbout)));
     private final AbstractConfigCell dividerMedia = cellGroup.appendCell(new ConfigCellDivider());
 
-    // Forwarding
     private final AbstractConfigCell headerForwarding = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellHeader(getString(R.string.ForwardingSettings)));
     private final AbstractConfigCell forwardProtectedModeRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getForwardProtectedMode(), new String[]{
             getString(R.string.ForwardProtectedModeAsk),
@@ -148,7 +165,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     }, null));
     private final AbstractConfigCell dividerForwarding = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellDivider());
 
-    // Fonts
     private final AbstractConfigCell headerFonts = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.FontsSettings)));
     private final AbstractConfigCell typefaceRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.typeface));
     private final AbstractConfigCell fontRegularRow = cellGroup.appendCell(new ConfigCellCustom("FontRegular", ConfigCellCustom.CUSTOM_ITEM_FontRegular, true));
@@ -158,7 +174,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell fontResetRow = cellGroup.appendCell(new ConfigCellCustom("FontReset", ConfigCellCustom.CUSTOM_ITEM_FontReset, true));
     private final AbstractConfigCell dividerFonts = cellGroup.appendCell(new ConfigCellDivider());
 
-    // Deleted Messages
     private final AbstractConfigCell headerSavedDeletedMessages = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellHeader(getString(R.string.DeletedMessages)));
     private final AbstractConfigCell enableSaveDeletedMessagesRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveDeletedMessages(), getString(R.string.SaveDeletedMessagesHint)));
     private final AbstractConfigCell messageSavingSaveMediaRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getMessageSavingSaveMedia(), getString(R.string.MessageSavingSaveMediaHint)));
@@ -217,7 +232,27 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
         if (!BuildVars.TURBO_BASE) {
             AyuData.loadSizes(this::refreshAyuDataSize);
         }
+        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.showBulletin);
         return true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LauncherIconController.applyPendingIcon();
+    }
+
+    @Override
+    public void onFragmentDestroy() {
+        super.onFragmentDestroy();
+        NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.showBulletin);
+    }
+
+    @Override
+    public void didReceivedNotification(int id, int account, Object... args) {
+        if (id == NotificationCenter.showBulletin && args.length > 0 && args[0] instanceof Integer bulletinType && bulletinType == Bulletin.TYPE_APP_ICON) {
+            AndroidUtilities.runOnUIThread(this::updateNotificationPreview);
+        }
     }
 
     @Override
@@ -233,7 +268,13 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
         };
     }
 
-    @SuppressLint("NewApi")
+    private static final int EASTER_EGG_TAPS_TO_UNLOCK = 5;
+    private static final long EASTER_EGG_TAP_RESET_MS = 1500;
+    private static final int TEST_NOTIFICATION_ID = 0x7055;
+
+    private int easterEggTapCounter = 0;
+    private Runnable easterEggResetRunnable = () -> easterEggTapCounter = 0;
+
     @Override
     public View createView(Context context) {
         View superView = super.createView(context);
@@ -244,8 +285,17 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
 
         setupDefaultListeners();
 
-        // Cells: Set OnSettingChanged Callbacks
+        if (actionBar.getTitleTextView() != null) {
+            actionBar.getTitleTextView().setOnClickListener(v -> registerEasterEggTap());
+        }
+
         cellGroup.callBackSettingsChanged = (key, newValue) -> {
+            if (key.equals(NaConfig.INSTANCE.getModernClassicIcons().getKey())) {
+                LauncherIconController.setIcon(LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon());
+                if (appIconsSelectorCell != null) {
+                    appIconsSelectorCell.notifyIconsChanged();
+                }
+            }
             if (key.equals(NaConfig.INSTANCE.getIosButtonPlacement().getKey())
                     || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())
                     || key.equals(NaConfig.INSTANCE.getCompactInputSize().getKey())
@@ -593,9 +643,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
         textView.setPadding(AndroidUtilities.dp(10), 0, AndroidUtilities.dp(10), 0);
         buttonsLayout.addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 36, Gravity.TOP | Gravity.RIGHT));
         textView.setOnClickListener(v1 -> {
-            // Media requires deleted messages: only persist media flags for categories where deleted messages
-            // are enabled. Disabled categories keep their stored value (intent) untouched, so
-            // re-enabling deleted later restores media with its previous setting.
+            // Media requires deleted messages: persist media flags only where deleted is enabled; others keep stored intent for later restore.
             if (NaConfig.INSTANCE.getSaveDeletedInPrivateChats().Bool()) {
                 NaConfig.INSTANCE.getSaveMediaInPrivateChats().setConfigBool(cells[0].isChecked());
             }
@@ -881,7 +929,196 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
         }
     }
 
-    //impl ListAdapter
+    private void updateNotificationPreview() {
+        if (notificationPreviewCell != null) {
+            notificationPreviewCell.updateSilhouette();
+        }
+        if (notificationMarksCell != null) {
+            notificationMarksCell.updateSelection();
+        }
+    }
+
+    private class NotificationPreviewCell extends FrameLayout {
+        private final ImageView silhouetteView;
+        private final TextView labelView;
+
+        public NotificationPreviewCell(Context context) {
+            super(context);
+            setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(10), AndroidUtilities.dp(16), AndroidUtilities.dp(10));
+
+            FrameLayout statusBar = new FrameLayout(context);
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(0xFF101014);
+            bg.setCornerRadius(AndroidUtilities.dp(9));
+            statusBar.setBackground(bg);
+            addView(statusBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 44, Gravity.CENTER_VERTICAL));
+
+            silhouetteView = new ImageView(context);
+            statusBar.addView(silhouetteView, LayoutHelper.createFrame(18, 18, Gravity.CENTER_VERTICAL | Gravity.LEFT, 10, 0, 0, 0));
+
+            TextView time = new TextView(context);
+            time.setText("12:47");
+            time.setTextColor(0xFFFFFFFF);
+            time.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            statusBar.addView(time, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 10, 0));
+
+            labelView = new TextView(context);
+            labelView.setText(LocaleController.getString(R.string.NotificationBarIconCaption));
+            labelView.setTextColor(0xB3FFFFFF);
+            labelView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+            statusBar.addView(labelView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
+
+            setOnLongClickListener(v -> {
+                postTestNotification();
+                return true;
+            });
+            updateSilhouette();
+        }
+
+        void updateSilhouette() {
+            LauncherIconController.LauncherIcon pendingIcon = LauncherIconController.getPendingIcon();
+            if (NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool() && pendingIcon != null) {
+                silhouetteView.setImageResource(pendingIcon.notification);
+            } else {
+                silhouetteView.setImageResource(LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()));
+            }
+        }
+    }
+
+    private void postTestNotification() {
+        Context context = ApplicationLoader.applicationContext;
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = new NotificationChannel("turbo_icon_test", "Turbo icon test", NotificationManager.IMPORTANCE_HIGH);
+        nm.createNotificationChannel(channel);
+        LauncherIconController.LauncherIcon previewIcon = LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon();
+        boolean followAppIcon = NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "turbo_icon_test")
+                .setSmallIcon(followAppIcon ? previewIcon.notification : LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()))
+                .setContentTitle(LocaleController.getString(R.string.AppName))
+                .setContentText("Turbo")
+                .setAutoCancel(true);
+        nm.notify(TEST_NOTIFICATION_ID, builder.build());
+    }
+
+    private void registerEasterEggTap() {
+        boolean unlocked = NaConfig.INSTANCE.getEasterEggUnlocked().Bool();
+        AndroidUtilities.cancelRunOnUIThread(easterEggResetRunnable);
+        easterEggTapCounter++;
+        if (easterEggTapCounter >= EASTER_EGG_TAPS_TO_UNLOCK) {
+            easterEggTapCounter = 0;
+            if (unlocked) {
+                lockEasterEgg();
+            } else {
+                unlockEasterEgg();
+            }
+            return;
+        }
+        if (!unlocked) {
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.done, LocaleController.formatPluralString("EasterEggTapsLeft", EASTER_EGG_TAPS_TO_UNLOCK - easterEggTapCounter)).show();
+        }
+        AndroidUtilities.runOnUIThread(easterEggResetRunnable, EASTER_EGG_TAP_RESET_MS);
+    }
+
+    private void unlockEasterEgg() {
+        NaConfig.INSTANCE.getEasterEggUnlocked().setConfigBool(true);
+        if (appIconsSelectorCell != null) {
+            appIconsSelectorCell.updateIconsVisibility();
+            appIconsSelectorCell.scrollIconsToEnd();
+        }
+        BulletinFactory.of(this).createSimpleBulletin(R.raw.done, getString(R.string.EasterEggUnlockedToast)).show();
+    }
+
+    private void lockEasterEgg() {
+        NaConfig.INSTANCE.getEasterEggUnlocked().setConfigBool(false);
+        if (LauncherIconController.getActiveIcon().isHidden) {
+            LauncherIconController.setPendingIcon(LauncherIconController.LauncherIcon.TURBO);
+            LauncherIconController.applyPendingIcon();
+        }
+        if (appIconsSelectorCell != null) {
+            appIconsSelectorCell.updateIconsVisibility();
+        }
+        BulletinFactory.of(this).createSimpleBulletin(R.raw.done, getString(R.string.EasterEggLockedToast)).show();
+    }
+
+    private class NotificationMarksCell extends FrameLayout {
+        private final LinearLayout marksLayout;
+        private final List<Integer> markValues = new ArrayList<>();
+        private final List<View> markViews = new ArrayList<>();
+        private final List<TextView> markNames = new ArrayList<>();
+        private ImageView likeAppIcon;
+
+        public NotificationMarksCell(Context context) {
+            super(context);
+            setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(8), AndroidUtilities.dp(16), AndroidUtilities.dp(12));
+
+            HorizontalScrollView scrollView = new HorizontalScrollView(context);
+            scrollView.setHorizontalScrollBarEnabled(false);
+            addView(scrollView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            marksLayout = new LinearLayout(context);
+            marksLayout.setOrientation(LinearLayout.HORIZONTAL);
+            scrollView.addView(marksLayout, new FrameLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
+
+            likeAppIcon = addMark(context, 0, LocaleController.getString(R.string.NotificationIconLikeApp), 1);
+            addMark(context, R.drawable.notification, LocaleController.getString(R.string.MapPreviewProviderTelegram), 0);
+            addMark(context, R.drawable.neko_notification, LocaleController.getString(R.string.NekoX), 2);
+            updateSelection();
+        }
+
+        private ImageView addMark(Context context, int iconRes, String name, int value) {
+            LinearLayout chip = new LinearLayout(context);
+            chip.setOrientation(LinearLayout.VERTICAL);
+            chip.setGravity(Gravity.CENTER_HORIZONTAL);
+            LinearLayout.LayoutParams chipParams = new LinearLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT);
+            chipParams.rightMargin = AndroidUtilities.dp(14);
+            chip.setLayoutParams(chipParams);
+
+            FrameLayout plate = new FrameLayout(context);
+            GradientDrawable plateBg = new GradientDrawable();
+            plateBg.setColor(0xFF101014);
+            plateBg.setCornerRadius(AndroidUtilities.dp(12));
+            plate.setBackground(plateBg);
+            ImageView icon = new ImageView(context);
+            if (iconRes != 0) {
+                icon.setImageResource(iconRes);
+            }
+            plate.addView(icon, LayoutHelper.createFrame(22, 22, Gravity.CENTER));
+            chip.addView(plate, new LinearLayout.LayoutParams(AndroidUtilities.dp(46), AndroidUtilities.dp(46)));
+
+            TextView nameView = new TextView(context);
+            nameView.setText(name);
+            nameView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+            nameView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+            chip.addView(nameView, new LinearLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
+
+            plate.setOnClickListener(v -> {
+                NaConfig.INSTANCE.getNotificationIcon().setConfigInt(value);
+                NaConfig.INSTANCE.getNotificationIconAsAppIcon().setConfigBool(value == 1);
+                NotificationsController.rebuildAllAccounts();
+                updateSelection();
+                updateNotificationPreview();
+            });
+            markValues.add(value);
+            markViews.add(plate);
+            markNames.add(nameView);
+            marksLayout.addView(chip);
+            return icon;
+        }
+
+        void updateSelection() {
+            int selected = NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool() ? 1 : NaConfig.INSTANCE.getNotificationIcon().Int();
+            LauncherIconController.LauncherIcon previewIcon = LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon();
+            likeAppIcon.setImageResource(previewIcon.notification);
+            for (int i = 0; i < markViews.size(); i++) {
+                boolean isSelected = markValues.get(i) == selected;
+                markViews.get(i).setScaleX(isSelected ? 1.1f : 1f);
+                markViews.get(i).setScaleY(isSelected ? 1.1f : 1f);
+                markViews.get(i).setAlpha(isSelected ? 1f : 0.55f);
+                markNames.get(i).setTextColor(getThemedColor(isSelected ? Theme.key_windowBackgroundWhiteBlueText : Theme.key_windowBackgroundWhiteGrayText));
+            }
+        }
+    }
+
     private class ListAdapter extends BaseListAdapter {
 
         public ListAdapter(Context context) {
@@ -905,7 +1142,13 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity {
         @Override
         protected View onCreateCustomViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = null;
-            if (viewType == ConfigCellCustom.CUSTOM_ITEM_InputBarPreview) {
+            if (viewType == ConfigCellCustom.CUSTOM_ITEM_AppIconPicker) {
+                view = appIconsSelectorCell = new AppIconsSelectorCell(mContext, TurboSettingsActivity.this, UserConfig.selectedAccount);
+            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_NotificationPreview) {
+                view = notificationPreviewCell = new NotificationPreviewCell(mContext);
+            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_NotificationMarksPicker) {
+                view = notificationMarksCell = new NotificationMarksCell(mContext);
+            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_InputBarPreview) {
                 view = inputBarPreviewCell = new InputBarPreviewCell(mContext, getResourceProvider());
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_FontRegular ||
                     viewType == ConfigCellCustom.CUSTOM_ITEM_FontBold ||

@@ -71,7 +71,6 @@ import android.webkit.MimeTypeMap;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.google.android.exoplayer2.C;

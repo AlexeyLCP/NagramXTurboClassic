@@ -14,7 +14,12 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 ## Features
 
 ### Settings
-- One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
+- One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — app icon picker, input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
+
+### App identity
+- Own launcher identity: the Turbo theme as the new default and 18 icon themes in three picker sections (Standard / Turbo / hidden easter egg); monochrome icons sized for themed launchers
+- "Modern classic" toggle for the classic themes
+- Notification mark follows the app icon — one badge, no duplicates; long-press the preview for a test notification
 
 ### Base build
 - ToS-friendly "base" APK variant: built and published alongside the regular one (download links side by side in the release post), without the disputable features — deleted/edited message saving, ghost mode, last seen history, regex filters, forward from protected chats, local premium. Base builds receive their own in-app updates.

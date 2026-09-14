@@ -236,6 +236,30 @@ object NaConfig {
             ConfigItem.configTypeInt,
             1
         )
+    val easterEggUnlocked =
+        addConfig(
+            "EasterEggUnlocked",
+            ConfigItem.configTypeBool,
+            false
+        )
+    val modernClassicIcons =
+        addConfig(
+            "ModernClassicIcons",
+            ConfigItem.configTypeBool,
+            false
+        )
+    val notificationIconAsAppIcon =
+        addConfig(
+            "NotificationIconAsAppIcon",
+            ConfigItem.configTypeBool,
+            true
+        )
+    private val notificationIconMigrated =
+        addConfig(
+            "NotificationIconMigrated",
+            ConfigItem.configTypeBool,
+            false
+        )
     val showSetReminder =
         addConfig(
             "SetReminder",
@@ -1586,6 +1610,28 @@ object NaConfig {
     private fun fixConfig() {
         if (ApplicationLoader.applicationContext == null) {
             return
+        }
+        if (!notificationIconMigrated.Bool()) {
+            if (getPreferences().contains(notificationIcon.key)) {
+                when (notificationIcon.Int()) {
+                    0 -> {
+                        notificationIconAsAppIcon.setConfigBool(false)
+                        notificationIcon.setConfigInt(0)
+                    }
+                    3 -> {
+                        notificationIconAsAppIcon.setConfigBool(false)
+                        notificationIcon.setConfigInt(2)
+                    }
+                    else -> {
+                        notificationIconAsAppIcon.setConfigBool(true)
+                        notificationIcon.setConfigInt(1)
+                    }
+                }
+            }
+            notificationIconMigrated.setConfigBool(true)
+        }
+        if (notificationIcon.Int() !in 0..2) {
+            notificationIcon.setConfigInt(1)
         }
         if (!translatorModeWithOriginalMigrated.Bool()) {
             if (getPreferences().contains(translatorMode.key)) {

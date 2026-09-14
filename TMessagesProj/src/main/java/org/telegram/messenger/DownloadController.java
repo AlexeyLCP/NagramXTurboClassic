@@ -17,9 +17,7 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.util.SparseArray;
 
-import androidx.collection.LongSparseArray;
 
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLitePreparedStatement;

@@ -80,6 +80,7 @@ import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.Forum.ForumUtilities;
 import org.telegram.ui.Components.spoilers.SpoilerEffect;
 import org.telegram.ui.LaunchActivity;
+import org.telegram.ui.LauncherIconController;
 import org.telegram.ui.PopupNotificationActivity;
 import org.telegram.ui.Stories.recorder.StoryEntry;
 
@@ -188,6 +189,15 @@ public class NotificationsController extends BaseController implements Notificat
     static {
         for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
             lockObjects[i] = new Object();
+        }
+    }
+
+    public static void rebuildAllAccounts() {
+        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            if (!UserConfig.getInstance(a).isClientActivated()) {
+                continue;
+            }
+            getInstance(a).rebuildActiveNotifications();
         }
     }
 
@@ -4117,6 +4127,10 @@ public class NotificationsController extends BaseController implements Notificat
         return channelId;
     }
 
+    public void rebuildActiveNotifications() {
+        notificationsQueue.postRunnable(() -> showOrUpdateNotification(false));
+    }
+
     private void showOrUpdateNotification(boolean notifyAboutLast) {
         if (!getUserConfig().isClientActivated() || pushMessages.isEmpty() && storyPushMessages.isEmpty() || !SharedConfig.showNotificationsForAllAccounts && currentAccount != UserConfig.selectedAccount) {
             dismissNotification();
@@ -6328,19 +6342,7 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     private int getNotificationIconResId() {
-        int notificationIconConfigValue = NaConfig.INSTANCE.getNotificationIcon().Int();
-        switch (notificationIconConfigValue) {
-            case 0:
-                return R.drawable.notification;
-            case 1:
-                return R.drawable.nagramx_notification;
-            case 2:
-                return R.drawable.nagram_notification;
-            case 3:
-                return R.drawable.neko_notification;
-        }
-
-        return R.drawable.notification;
+        return LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int());
     }
 
     public void loadTopicsNotificationsExceptions(long dialogId, Consumer<HashSet<Integer>> consumer) {

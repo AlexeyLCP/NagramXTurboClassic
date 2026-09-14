@@ -1885,12 +1885,12 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     void scrollStep(int dx, int dy, @Nullable int[] consumed) {
         startInterceptRequestLayout();
         onEnterLayoutOrScroll();
+        int consumedX = 0;
+        int consumedY = 0;
+        try {
 
         TraceCompat.beginSection(TRACE_SCROLL_TAG);
         fillRemainingScrollValues(mState);
-
-        int consumedX = 0;
-        int consumedY = 0;
         if (dx != 0) {
             consumedX = mLayout.scrollHorizontallyBy(dx, mRecycler, mState);
         }
@@ -1901,8 +1901,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         TraceCompat.endSection();
         repositionShadowingViews();
 
-        onExitLayoutOrScroll();
-        stopInterceptRequestLayout(false);
+        } finally {
+            onExitLayoutOrScroll();
+            stopInterceptRequestLayout(false);
+        }
 
         if (consumed != null) {
             consumed[0] = consumedX;
@@ -4037,6 +4039,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         startInterceptRequestLayout();
         mViewInfoStore.clear();
         onEnterLayoutOrScroll();
+        try {
         processAdapterUpdatesAndSetAnimationFlags();
         saveFocusInfo();
         mState.mTrackOldChangeHolders = mState.mRunSimpleAnimations && mItemsChanged;
@@ -4113,8 +4116,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         } else {
             clearOldPositions();
         }
-        onExitLayoutOrScroll();
-        stopInterceptRequestLayout(false);
+        } finally {
+            onExitLayoutOrScroll();
+            stopInterceptRequestLayout(false);
+        }
         mState.mLayoutStep = State.STEP_LAYOUT;
     }
 
@@ -4125,6 +4130,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     private void dispatchLayoutStep2() {
         startInterceptRequestLayout();
         onEnterLayoutOrScroll();
+        try {
         mState.assertLayoutStep(State.STEP_LAYOUT | State.STEP_ANIMATIONS);
         mAdapterHelper.consumeUpdatesInOnePass();
         mState.mItemCount = mAdapter.getItemCount();
@@ -4140,8 +4146,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         // onLayoutChildren may have caused client code to disable item animations; re-check
         mState.mRunSimpleAnimations = mState.mRunSimpleAnimations && mItemAnimator != null;
         mState.mLayoutStep = State.STEP_ANIMATIONS;
-        onExitLayoutOrScroll();
-        stopInterceptRequestLayout(false);
+        } finally {
+            onExitLayoutOrScroll();
+            stopInterceptRequestLayout(false);
+        }
     }
 
     /**
@@ -4152,6 +4160,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         mState.assertLayoutStep(State.STEP_ANIMATIONS);
         startInterceptRequestLayout();
         onEnterLayoutOrScroll();
+        try {
         mState.mLayoutStep = State.STEP_START;
         if (mState.mRunSimpleAnimations) {
             // Step 3: Find out where things are now, and process change animations.
@@ -4237,8 +4246,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         }
 
         mLayout.onLayoutCompleted(mState);
-        onExitLayoutOrScroll();
-        stopInterceptRequestLayout(false);
+        } finally {
+            onExitLayoutOrScroll();
+            stopInterceptRequestLayout(false);
+        }
         mViewInfoStore.clear();
         if (didChildRangeChange(mMinMaxLayoutPositions[0], mMinMaxLayoutPositions[1])) {
             dispatchOnScrolled(0, 0);

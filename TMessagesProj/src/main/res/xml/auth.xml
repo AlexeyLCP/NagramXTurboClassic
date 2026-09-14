@@ -2,7 +2,7 @@
 
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
     android:accountType="nu.gpu.nagramxturbo"
-    android:icon="@mipmap/ic_launcher_nagram_blue_round"
-    android:smallIcon="@mipmap/ic_launcher_nagram_blue_round"
+    android:icon="@mipmap/ic_launcher_turbo"
+    android:smallIcon="@mipmap/ic_launcher_turbo"
     android:label="@string/AppName"
     android:accountPreferences="@xml/auth_menu"/>

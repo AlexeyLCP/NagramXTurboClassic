@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="logo.png" width="96" alt="Nagram X Turbo logo">
+</div>
+
 # Nagram X Turbo
 
 A fork of the [Nagram X](https://github.com/risin42/NagramX) **Telegram client for Android** with bug fixes and focused UX tweaks — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package (`nu.gpu.nagramxturbo`), keystore and remote-config: an independent app that installs alongside Nagram X or the official Telegram client (chats are shared per account).
@@ -9,7 +13,8 @@ Turbo updates on its own — in-app updates work independently of Nagram X.
 ## Features (vs Nagram X)
 
 - **Share sheet**: folder tabs with an animated swipe between folders, remembers the last opened folder, forwarding toggles (hide sender / hide caption / silent / comment position before-after), "Send later" and "Send when online", forward from protected chats as copies (ask / always / never), edit the message text before forwarding (changed text is sent as a copy), text formatting in the comment field (long-press to select and style).
-- **Turbo settings section**: all Turbo settings in one place — input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts, next to the Nagram X settings groups.
+- **Turbo settings section**: all Turbo settings in one place — app icon picker, input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts, next to the Nagram X settings groups.
+- **App icon**: 18 exclusive themes in three picker sections (Standard / Turbo / Hidden easter egg), the Turbo theme as the new default, classic themes with a "modern" look (full background, bigger plane), monochrome icons sized for the system stroke, notification mark follows the app icon (or Telegram / NekoX), test notification by long-pressing the preview.
 - **iOS-style input bar** (Turbo → Input Bar, off by default): glass capsule field with round button bubbles — three independent toggles (button placement, iOS appearance, compact mode).
 - **Action button style** (Turbo → Input Bar): Accent / Neutral / White for the send, voice and apply buttons everywhere they show (input bar in glass form, share sheet / photo picker / attach menu / rich editor as a solid circle); replaces the white-send toggle.
 - **Custom fonts**: pick by category (Regular / Bold / Italic / Mono), import your own `.ttf`/`.otf` from chat, text size in every input field.
