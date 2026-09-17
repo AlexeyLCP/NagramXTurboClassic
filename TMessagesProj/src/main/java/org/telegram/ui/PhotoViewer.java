@@ -1170,6 +1170,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private int fullscreenedByButton;
     private boolean wasRotated;
     private int prevActivityOrientation = -10;
+    private boolean isInstantMediaRotationPending;
 
     private int keyboardSize;
 
@@ -6284,7 +6285,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 wasRotated = false;
                 fullscreenedByButton = 1;
                 if (prevOrientation == -10) {
-                    prevOrientation = parentActivity.getRequestedOrientation();
+                    prevOrientation = prevActivityOrientation != -10 ? prevActivityOrientation : parentActivity.getRequestedOrientation();
                 }
                 WindowManager manager = (WindowManager) parentActivity.getSystemService(Activity.WINDOW_SERVICE);
                 int displayRotation = manager.getDefaultDisplay().getRotation();
@@ -9443,6 +9444,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         switchingInlineMode = true;
         isVisible = false;
         isVisibleOrAnimating = false;
+        restoreFullscreenButtonOrientation();
+        restoreMediaAutoRotateOrientation();
         AndroidUtilities.cancelRunOnUIThread(hideActionBarRunnable);
         if (currentPlaceObject != null && !currentPlaceObject.imageReceiver.getVisible()) {
             currentPlaceObject.imageReceiver.setVisible(true, true);
@@ -10138,7 +10141,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             wasRotated = false;
             fullscreenedByButton = 2;
             if (prevOrientation == -10) {
-                prevOrientation = parentActivity.getRequestedOrientation();
+                prevOrientation = prevActivityOrientation != -10 ? prevActivityOrientation : parentActivity.getRequestedOrientation();
             }
             parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         });
@@ -10818,17 +10821,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                             if (orientation >= 270 - 30 && orientation <= 270 + 30) {
                                 wasRotated = true;
                             } else if (wasRotated && orientation > 0 && (orientation >= 330 || orientation <= 30)) {
-                                parentActivity.setRequestedOrientation(prevOrientation);
-                                fullscreenedByButton = 0;
-                                wasRotated = false;
+                                restoreOrientationFromFullscreen();
                             }
                         } else {
                             if (orientation > 0 && (orientation >= 330 || orientation <= 30)) {
                                 wasRotated = true;
                             } else if (wasRotated && orientation >= 270 - 30 && orientation <= 270 + 30) {
-                                parentActivity.setRequestedOrientation(prevOrientation);
-                                fullscreenedByButton = 0;
-                                wasRotated = false;
+                                restoreOrientationFromFullscreen();
                             }
                         }
                     }
@@ -11228,7 +11227,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             return;
         }
         int mode = NaConfig.INSTANCE.getMediaAutoRotateMode().Int();
-        int orientation = -10;
+        int orientation = -1;
         if (mode == NaConfig.MEDIA_AUTO_ROTATE_GYRO) {
             orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
         } else if (mode == NaConfig.MEDIA_AUTO_ROTATE_FILL) {
@@ -11245,6 +11244,30 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
     }
 
+    private void restoreFullscreenButtonOrientation() {
+        if (parentActivity != null && fullscreenedByButton != 0) {
+            parentActivity.setRequestedOrientation(prevOrientation);
+            fullscreenedByButton = 0;
+            wasRotated = false;
+        }
+    }
+
+    private void restoreMediaAutoRotateOrientation() {
+        if (parentActivity != null && prevActivityOrientation != -10) {
+            parentActivity.setRequestedOrientation(prevActivityOrientation);
+            prevActivityOrientation = -10;
+        }
+    }
+
+    private void restoreOrientationFromFullscreen() {
+        if (parentActivity == null) {
+            return;
+        }
+        parentActivity.setRequestedOrientation(prevOrientation);
+        fullscreenedByButton = 0;
+        wasRotated = false;
+    }
+
     private int resolveFillScreenOrientation() {
         if (currentMessageObject == null || !currentMessageObject.isVideo()) {
             return -1;
@@ -11258,8 +11281,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
                 if (attribute.w > attribute.h) {
                     return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-                } else if (attribute.w < attribute.h && isCurrentScreenLandscape()) {
-                    return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
                 }
                 break;
             }
@@ -15133,6 +15154,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             FileLog.e(e);
         }
         updateMediaRotateButton();
+        wasMediaContentRotated = false;
+        isInstantMediaRotationPending = false;
+        if (mediaContentRotation != null) {
+            mediaContentRotation.set(false, true);
+        }
         applyMediaAutoRotateMode();
     }
 
@@ -18963,21 +18989,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             windowView.setClipChildren(false);
         }
 
+        restoreFullscreenButtonOrientation();
+        restoreMediaAutoRotateOrientation();
+
         if (parentActivity == null || !isInline && !isVisible || checkAnimation() || placeProvider == null) {
             return;
         }
 //        if (captionEditText.hideActionMode() && !fromEditMode) {
 //            return;
 //        }
-        if (parentActivity != null && fullscreenedByButton != 0) {
-            parentActivity.setRequestedOrientation(prevOrientation);
-            fullscreenedByButton = 0;
-            wasRotated = false;
-        }
-        if (parentActivity != null && prevActivityOrientation != -10) {
-            parentActivity.setRequestedOrientation(prevActivityOrientation);
-            prevActivityOrientation = -10;
-        }
         if (!doneButtonPressed && !imagesArrLocals.isEmpty() && currentIndex >= 0 && currentIndex < imagesArrLocals.size()) {
             Object entry = imagesArrLocals.get(currentIndex);
             if (entry instanceof MediaController.MediaEditState) {
@@ -19445,6 +19465,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     public void destroyPhotoViewer() {
+        restoreFullscreenButtonOrientation();
+        restoreMediaAutoRotateOrientation();
         if (parentActivity == null || windowView == null) {
             return;
         }
@@ -19672,6 +19694,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         float w = centerImage.getImageWidth();
         float h = centerImage.getImageHeight();
+        if (isMediaContentRotated(centerImage, false)) {
+            float swap = w;
+            w = h;
+            h = swap;
+        }
         if (editState.cropState != null) {
             w *= editState.cropState.cropPw;
             h *= editState.cropState.cropPh;
@@ -20290,6 +20317,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         checkFullscreenButton();
         updateMediaRotateButton();
+        isInstantMediaRotationPending = true;
         applyMediaAutoRotateMode();
         containerView.invalidate();
 
@@ -20782,6 +20810,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     int width = centerImage.getBitmapWidth();
                     int height = centerImage.getBitmapHeight();
                     boolean mediaContentRotated = isMediaContentRotated(centerImage, isCurrentVideo);
+                    if (isInstantMediaRotationPending) {
+                        isInstantMediaRotationPending = false;
+                        wasMediaContentRotated = mediaContentRotated;
+                        mediaContentRotation.set(mediaContentRotated, true);
+                        scale = 1.0f;
+                        translationX = 0;
+                        translationY = 0;
+                        scroller.abortAnimation();
+                    }
                     if (mediaContentRotated != wasMediaContentRotated) {
                         wasMediaContentRotated = mediaContentRotated;
                         scale = 1.0f;
