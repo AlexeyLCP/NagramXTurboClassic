@@ -1171,6 +1171,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private boolean wasRotated;
     private int prevActivityOrientation = -10;
     private boolean isInstantMediaRotationPending;
+    private float transposePagingOffsetY;
+    private float prevTransposePagingScreenY;
+    private ValueAnimator transposePagingAnimator;
+    private boolean transposePagingFinishing;
+    private float transposePagingTargetAddSign;
+    private boolean transposeDismissAnimating;
 
     private int keyboardSize;
 
@@ -9444,8 +9450,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         switchingInlineMode = true;
         isVisible = false;
         isVisibleOrAnimating = false;
-        restoreFullscreenButtonOrientation();
-        restoreMediaAutoRotateOrientation();
+        resetTransposePagingState();
         AndroidUtilities.cancelRunOnUIThread(hideActionBarRunnable);
         if (currentPlaceObject != null && !currentPlaceObject.imageReceiver.getVisible()) {
             currentPlaceObject.imageReceiver.setVisible(true, true);
@@ -10821,13 +10826,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                             if (orientation >= 270 - 30 && orientation <= 270 + 30) {
                                 wasRotated = true;
                             } else if (wasRotated && orientation > 0 && (orientation >= 330 || orientation <= 30)) {
-                                restoreOrientationFromFullscreen();
+                                restoreFullscreenButtonOrientation();
                             }
                         } else {
                             if (orientation > 0 && (orientation >= 330 || orientation <= 30)) {
                                 wasRotated = true;
                             } else if (wasRotated && orientation >= 270 - 30 && orientation <= 270 + 30) {
-                                restoreOrientationFromFullscreen();
+                                restoreFullscreenButtonOrientation();
                             }
                         }
                     }
@@ -11235,7 +11240,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         if (orientation != -1) {
             if (prevActivityOrientation == -10) {
-                prevActivityOrientation = parentActivity.getRequestedOrientation();
+                prevActivityOrientation = fullscreenedByButton != 0 ? prevOrientation : parentActivity.getRequestedOrientation();
             }
             parentActivity.setRequestedOrientation(orientation);
         } else if (prevActivityOrientation != -10) {
@@ -11259,20 +11264,40 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
     }
 
-    private void restoreOrientationFromFullscreen() {
-        if (parentActivity == null) {
-            return;
+    private void cancelTransposePagingAnimator() {
+        if (transposePagingAnimator != null) {
+            transposePagingAnimator.removeAllListeners();
+            transposePagingAnimator.cancel();
+            transposePagingAnimator = null;
         }
-        parentActivity.setRequestedOrientation(prevOrientation);
-        fullscreenedByButton = 0;
-        wasRotated = false;
+    }
+
+    private void resetTransposePagingState() {
+        cancelTransposePagingAnimator();
+        transposePagingFinishing = false;
+        transposePagingOffsetY = 0;
+        restoreFullscreenButtonOrientation();
+        restoreMediaAutoRotateOrientation();
+    }
+
+    private int resolveDisplayRotation() {
+        return parentActivity == null ? Surface.ROTATION_0 : parentActivity.getWindowManager().getDefaultDisplay().getRotation();
+    }
+
+    private float resolveTransposeSideOffsetY(float containerHeight) {
+        float sideGap = containerHeight + dp(30) / 2;
+        return (transposePagingOffsetY > 0 ? -sideGap : sideGap) + transposePagingOffsetY;
     }
 
     private int resolveFillScreenOrientation() {
-        if (currentMessageObject == null || !currentMessageObject.isVideo()) {
+        return resolveFillScreenOrientationFor(currentMessageObject);
+    }
+
+    private int resolveFillScreenOrientationFor(MessageObject messageObject) {
+        if (messageObject == null || !messageObject.isVideo()) {
             return -1;
         }
-        TLRPC.Document document = currentMessageObject.getDocument();
+        TLRPC.Document document = messageObject.getDocument();
         if (document == null) {
             return -1;
         }
@@ -11286,6 +11311,99 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             }
         }
         return -1;
+    }
+
+    private void applyMediaAutoRotateModeForSwipe(int add) {
+        if (parentActivity == null || isInline || NaConfig.INSTANCE.getMediaAutoRotateMode().Int() != NaConfig.MEDIA_AUTO_ROTATE_FILL) {
+            return;
+        }
+        int newIndex = currentIndex + add;
+        if (newIndex < 0 || imagesArr.isEmpty() || newIndex >= imagesArr.size()) {
+            return;
+        }
+        Object object = imagesArr.get(newIndex);
+        int orientation = resolveFillScreenOrientationFor(object instanceof MessageObject ? (MessageObject) object : null);
+        if (orientation != -1) {
+            if (prevActivityOrientation == -10) {
+                prevActivityOrientation = fullscreenedByButton != 0 ? prevOrientation : parentActivity.getRequestedOrientation();
+            }
+            parentActivity.setRequestedOrientation(orientation);
+        } else {
+            restoreMediaAutoRotateOrientation();
+        }
+    }
+
+    private boolean shouldTransposeMediaGestures() {
+        return !isInline && NaConfig.INSTANCE.getMediaAutoRotateMode().Int() == NaConfig.MEDIA_AUTO_ROTATE_FILL && isCurrentScreenLandscape();
+    }
+
+    private float transposePagingAddSign() {
+        float offsetYSign = transposePagingOffsetY == 0 ? 0 : Math.signum(transposePagingOffsetY);
+        return resolveDisplayRotation() == Surface.ROTATION_270 ? -offsetYSign : offsetYSign;
+    }
+
+    private void animateTransposePaging(boolean page, int add) {
+        cancelTransposePagingAnimator();
+        if (page) {
+            transposePagingFinishing = true;
+            transposePagingTargetAddSign = add;
+        }
+        float containerHeight = getContainerViewHeight();
+        float target = 0;
+        if (page) {
+            float pagingSign = transposePagingOffsetY != 0 ? Math.signum(transposePagingOffsetY) : (add > 0 ? -1f : 1f);
+            target = pagingSign * (containerHeight + dp(30) / 2);
+        }
+        transposePagingAnimator = ValueAnimator.ofFloat(transposePagingOffsetY, target);
+        transposePagingAnimator.setDuration(250);
+        transposePagingAnimator.setInterpolator(interpolator);
+        transposePagingAnimator.addUpdateListener(animator -> {
+            transposePagingOffsetY = (float) animator.getAnimatedValue();
+            invalidateBlur();
+            containerView.invalidate();
+        });
+        transposePagingAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                transposePagingAnimator = null;
+                if (page) {
+                    transposePagingFinishing = false;
+                    transposePagingOffsetY = 0;
+                    applyMediaAutoRotateModeForSwipe(add);
+                    switchToNextIndex(add, false);
+                }
+                containerView.invalidate();
+            }
+        });
+        transposePagingAnimator.start();
+    }
+
+    private void animateTransposeDismiss() {
+        cancelTransposePagingAnimator();
+        transposePagingFinishing = true;
+        transposeDismissAnimating = true;
+        float target = translationX >= 0 ? getContainerViewWidth() + dp(30) : -getContainerViewWidth() - dp(30);
+        transposePagingAnimator = ValueAnimator.ofFloat(translationX, target);
+        transposePagingAnimator.setDuration(250);
+        transposePagingAnimator.setInterpolator(interpolator);
+        transposePagingAnimator.addUpdateListener(animator -> {
+            translationX = (float) animator.getAnimatedValue();
+            backgroundDrawable.setAlpha((int) (127f * (1f - animator.getAnimatedFraction())));
+            invalidateBlur();
+            containerView.invalidate();
+        });
+        transposePagingAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                transposePagingAnimator = null;
+                transposePagingFinishing = false;
+                transposeDismissAnimating = false;
+                translationX = 0;
+                backgroundDrawable.setAlpha(255);
+                closePhoto(false, false);
+            }
+        });
+        transposePagingAnimator.start();
     }
 
     private boolean isCurrentScreenLandscape() {
@@ -18989,8 +19107,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             windowView.setClipChildren(false);
         }
 
-        restoreFullscreenButtonOrientation();
-        restoreMediaAutoRotateOrientation();
+        resetTransposePagingState();
 
         if (parentActivity == null || !isInline && !isVisible || checkAnimation() || placeProvider == null) {
             return;
@@ -19924,6 +20041,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     } else {
                         moveStartX = ev.getX();
                         dragY = moveStartY = ev.getY();
+                        prevTransposePagingScreenY = ev.getY();
+                        if (transposePagingAnimator != null && !transposePagingFinishing) {
+                            cancelTransposePagingAnimator();
+                        }
                         draggingDown = false;
                         canDragDown = true;
                         if (velocityTracker != null) {
@@ -19991,8 +20112,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 if (velocityTracker != null) {
                     velocityTracker.addMovement(ev);
                 }
-                float dx = Math.abs(ev.getX() - moveStartX);
-                float dy = Math.abs(ev.getY() - dragY);
+                boolean transposeGestures = shouldTransposeMediaGestures();
+                float rawDx = Math.abs(ev.getX() - moveStartX);
+                float rawDy = Math.abs(ev.getY() - dragY);
+                float dx = transposeGestures ? rawDy : rawDx;
+                float dy = transposeGestures ? rawDx : rawDy;
                 if (dx > touchSlop || dy > touchSlop) {
                     discardTap = true;
                     hidePressedDrawables();
@@ -20000,6 +20124,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     if (qualityChooseView != null && qualityChooseView.getVisibility() == View.VISIBLE) {
                         return true;
                     }
+                }
+                if (transposePagingFinishing) {
+                    return true;
                 }
                 if (placeProvider.canScrollAway() && currentEditMode == EDIT_MODE_NONE && sendPhotoType != SELECT_TYPE_AVATAR && sendPhotoType != SELECT_TYPE_STICKER && canDragDown && !draggingDown && scale == 1 && dy >= dp(30) && dy / 2 > dx) {
                     draggingDown = true;
@@ -20015,11 +20142,23 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     }
                     return true;
                 } else if (draggingDown) {
-                    translationY = ev.getY() - dragY;
+                    if (transposeGestures) {
+                        translationX = ev.getX() - moveStartX;
+                    } else {
+                        translationY = ev.getY() - dragY;
+                    }
                     containerView.invalidate();
                 } else if (!invalidCoords && animationStartTime == 0) {
                     float moveDx = moveStartX - ev.getX();
                     float moveDy = moveStartY - ev.getY();
+                    int displayRotation = Surface.ROTATION_0;
+                    if (transposeGestures) {
+                        displayRotation = resolveDisplayRotation();
+                        float transposedDx = displayRotation == Surface.ROTATION_90 ? moveDy : -moveDy;
+                        float transposedDy = displayRotation == Surface.ROTATION_90 ? -moveDx : moveDx;
+                        moveDx = transposedDx;
+                        moveDy = transposedDy;
+                    }
                     if (moving || currentEditMode != EDIT_MODE_NONE || sendPhotoType == SELECT_TYPE_STICKER || scale == 1 && Math.abs(moveDy) + dp(12) < Math.abs(moveDx) || scale != 1) {
                         if (!moving) {
                             moveDx = 0;
@@ -20027,11 +20166,24 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                             moving = true;
                             canDragDown = false;
                             hidePressedDrawables();
+                            prevTransposePagingScreenY = ev.getY();
                         }
 
                         moveStartX = ev.getX();
                         moveStartY = ev.getY();
                         updateMinMax(scale);
+                        if (transposeGestures && scale == 1 && currentEditMode == EDIT_MODE_NONE && !transposePagingFinishing) {
+                            float screenDy = ev.getY() - prevTransposePagingScreenY;
+                            prevTransposePagingScreenY = ev.getY();
+                            float addSign = transposePagingAddSign();
+                            if (addSign > 0 && !rightImage.hasImageSet() || addSign < 0 && !leftImage.hasImageSet()) {
+                                screenDy /= 3.0f;
+                            }
+                            transposePagingOffsetY += screenDy;
+                            invalidateBlur();
+                            containerView.invalidate();
+                            return true;
+                        }
                         if (translationX < minX && (currentEditMode != EDIT_MODE_NONE || !rightImage.hasImageSet()) || translationX > maxX && (currentEditMode != EDIT_MODE_NONE || !leftImage.hasImageSet())) {
                             moveDx /= 3.0f;
                         }
@@ -20065,6 +20217,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         } else if (ev.getActionMasked() == MotionEvent.ACTION_CANCEL || ev.getActionMasked() == MotionEvent.ACTION_UP || ev.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
             hidePressedDrawables();
             AndroidUtilities.cancelRunOnUIThread(longPressRunnable);
+            if (ev.getActionMasked() == MotionEvent.ACTION_CANCEL && transposePagingAnimator == null && transposePagingOffsetY != 0) {
+                animateTransposePaging(false, 0);
+            }
             if (paintViewTouched == 1) {
                 if (photoPaintView != null) {
                     View v = photoPaintView.getView();
@@ -20133,8 +20288,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 zooming = false;
                 moving = false;
             } else if (draggingDown) {
-                if (Math.abs(dragY - ev.getY()) > getContainerViewHeight() / 6.0f) {
-                    if (enableSwipeToPiP() && (dragY - ev.getY() > 0)) {
+                float dismissDragDistance = shouldTransposeMediaGestures() ? Math.abs(translationX) : Math.abs(dragY - ev.getY());
+                if (dismissDragDistance > getContainerViewHeight() / 6.0f) {
+                    if (shouldTransposeMediaGestures()) {
+                        animateTransposeDismiss();
+                    } else if (enableSwipeToPiP() && (dragY - ev.getY() > 0)) {
                         switchToPip(true);
                     } else {
                         closePhoto(true, false);
@@ -20154,9 +20312,27 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 moving = false;
                 canDragDown = true;
                 float velocity = 0;
+                float yVelocityScreen = 0;
+                int rotationNow = resolveDisplayRotation();
+                boolean transposeGestures = shouldTransposeMediaGestures();
                 if (velocityTracker != null && scale == 1) {
                     velocityTracker.computeCurrentVelocity(1000);
-                    velocity = velocityTracker.getXVelocity();
+                    if (transposeGestures) {
+                        yVelocityScreen = velocityTracker.getYVelocity();
+                        velocity = rotationNow == Surface.ROTATION_90 ? -yVelocityScreen : yVelocityScreen;
+                    } else {
+                        velocity = velocityTracker.getXVelocity();
+                    }
+                }
+
+                if (transposeGestures && scale == 1 && currentEditMode == EDIT_MODE_NONE && !transposePagingFinishing) {
+                    float containerHeight = getContainerViewHeight();
+                    float pagingSign = transposePagingOffsetY != 0 ? Math.signum(transposePagingOffsetY) : (yVelocityScreen < 0 ? -1f : 1f);
+                    int transposeAdd = (int) (rotationNow == Surface.ROTATION_270 ? -pagingSign : pagingSign);
+                    boolean canPage = transposeAdd > 0 ? rightImage.hasImageSet() : leftImage.hasImageSet();
+                    boolean page = canPage && (Math.abs(transposePagingOffsetY) > containerHeight / 3f || Math.abs(yVelocityScreen) > dp(650));
+                    animateTransposePaging(page, page ? transposeAdd : 0);
+                    return true;
                 }
 
                 if (currentEditMode == EDIT_MODE_NONE && sendPhotoType != SELECT_TYPE_AVATAR && sendPhotoType != SELECT_TYPE_STICKER) {
@@ -20209,6 +20385,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             extra = (getContainerViewWidth() - centerImage.getImageWidth()) / 2 * scale;
         }
         switchImageAfterAnimation = 1;
+        applyMediaAutoRotateModeForSwipe(1);
         animateTo(scale, minX - getContainerViewWidth() - extra - dp(30) / 2, translationY, false);
     }
 
@@ -20218,6 +20395,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             extra = (getContainerViewWidth() - centerImage.getImageWidth()) / 2 * scale;
         }
         switchImageAfterAnimation = 2;
+        applyMediaAutoRotateModeForSwipe(-1);
         animateTo(scale, maxX + getContainerViewWidth() + extra + dp(30) / 2, translationY, false);
     }
 
@@ -20597,12 +20775,17 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
         int containerWidth = getContainerViewWidth();
         int containerHeight = getContainerViewHeight();
+        boolean transposeGestures = shouldTransposeMediaGestures();
         if (animationInProgress != 2 && animationInProgress != 4 && !pipAnimationInProgress && !isInline) {
-            if (currentEditMode == EDIT_MODE_NONE && sendPhotoType != SELECT_TYPE_AVATAR && sendPhotoType != SELECT_TYPE_STICKER && scale == 1 && aty != -1 && !zoomAnimation) {
-                float maxValue = containerWidth / 4.0f;
-                backgroundDrawable.setAlpha((int) Math.max(127, 255 * (1.0f - (Math.min(Math.abs(aty), maxValue) / maxValue))));
-            } else {
-                backgroundDrawable.setAlpha(255);
+            if (!transposeDismissAnimating) {
+                boolean transposeDismissActive = transposeGestures;
+                if (currentEditMode == EDIT_MODE_NONE && sendPhotoType != SELECT_TYPE_AVATAR && sendPhotoType != SELECT_TYPE_STICKER && scale == 1 && (aty != -1 || transposeDismissActive) && !zoomAnimation) {
+                    float dismissDragOffset = transposeDismissActive ? translationX : aty;
+                    float maxValue = (transposeDismissActive ? containerHeight : containerWidth) / 4.0f;
+                    backgroundDrawable.setAlpha((int) Math.max(127, 255 * (1.0f - (Math.min(Math.abs(dismissDragOffset), maxValue) / maxValue))));
+                } else {
+                    backgroundDrawable.setAlpha(255);
+                }
             }
         } else if (animationInProgress == 4) {
             canvas.drawColor(0xff000000);
@@ -20611,7 +20794,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         sideImage = null;
         if (currentEditMode == EDIT_MODE_NONE && sendPhotoType != SELECT_TYPE_AVATAR && sendPhotoType != SELECT_TYPE_STICKER) {
             if (scale >= 1.0f && !zoomAnimation && !zooming) {
-                if (currentTranslationX > maxX + dp(5)) {
+                if (transposeGestures) {
+                    if (Math.abs(transposePagingOffsetY) > dp(5)) {
+                        float drawAddSign = transposePagingFinishing ? transposePagingTargetAddSign : transposePagingAddSign();
+                        sideImage = drawAddSign > 0 ? rightImage : leftImage;
+                    }
+                } else if (currentTranslationX > maxX + dp(5)) {
                     sideImage = leftImage;
                 } else if (currentTranslationX < minX - dp(5)) {
                     sideImage = rightImage;
@@ -20638,7 +20826,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             float translateX = currentTranslationX;
             float scaleDiff = 0;
             float alpha = 1;
-            if (!zoomAnimation && translateX < minX) {
+            if (transposeGestures) {
+                alpha = Math.min(1.0f, Math.abs(transposePagingOffsetY) / containerHeight);
+            } else if (!zoomAnimation && translateX < minX) {
                 alpha = Math.min(1.0f, (minX - translateX) / containerWidth);
                 scaleDiff = (1.0f - alpha) * 0.3f;
                 translateX = -containerWidth - dp(30) / 2;
@@ -20647,7 +20837,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (sideImage.hasBitmapImage()) {
                 canvas.save();
                 canvas.translate(containerWidth / 2, containerHeight / 2);
-                canvas.translate(containerWidth + dp(30) / 2 + translateX, 0);
+                if (transposeGestures) {
+                    canvas.translate(0, resolveTransposeSideOffsetY(containerHeight));
+                } else {
+                    canvas.translate(containerWidth + dp(30) / 2 + translateX, 0);
+                }
                 canvas.scale(1.0f - scaleDiff, 1.0f - scaleDiff);
                 int bitmapWidth = sideImage.getBitmapWidth();
                 int bitmapHeight = sideImage.getBitmapHeight();
@@ -20703,8 +20897,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
             if (seekSpeedDrawable == null || !seekSpeedDrawable.isShown()) {
                 canvas.save();
-                canvas.translate(translateX, currentTranslationY / currentScale);
-                canvas.translate((containerWidth * (scale + 1) + dp(30)) / 2, -currentTranslationY / currentScale);
+                if (transposeGestures) {
+                    canvas.translate(0, resolveTransposeSideOffsetY(containerHeight));
+                } else {
+                    canvas.translate(translateX, currentTranslationY / currentScale);
+                    canvas.translate((containerWidth * (scale + 1) + dp(30)) / 2, -currentTranslationY / currentScale);
+                }
                 photoProgressViews[1].setScale(1.0f - scaleDiff);
                 photoProgressViews[1].setAlpha(alpha);
                 photoProgressViews[1].onDraw(canvas);
@@ -20781,8 +20979,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             canvas.save();
             canvas.translate(containerWidth / 2f + getAdditionX(currentEditMode), containerHeight / 2f + getAdditionY(currentEditMode));
             centerImageTransform.preTranslate(containerWidth / 2f + getAdditionX(currentEditMode), containerHeight / 2f + getAdditionY(currentEditMode));
-            canvas.translate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0));
-            centerImageTransform.preTranslate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0));
+            canvas.translate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0) + transposePagingOffsetY);
+            centerImageTransform.preTranslate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0) + transposePagingOffsetY);
             canvas.scale(currentScale - scaleDiff, currentScale - scaleDiff);
             centerImageTransform.preScale(currentScale - scaleDiff, currentScale - scaleDiff);
             canvas.rotate(currentRotation);
@@ -21105,7 +21303,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (sideImage.hasBitmapImage()) {
                 canvas.save();
                 canvas.translate(containerWidth / 2, containerHeight / 2);
-                canvas.translate(-(containerWidth * (scale + 1) + dp(30)) / 2 + currentTranslationX, 0);
+                if (transposeGestures) {
+                    canvas.translate(0, resolveTransposeSideOffsetY(containerHeight));
+                } else {
+                    canvas.translate(-(containerWidth * (scale + 1) + dp(30)) / 2 + currentTranslationX, 0);
+                }
                 int bitmapWidth = sideImage.getBitmapWidth();
                 int bitmapHeight = sideImage.getBitmapHeight();
                 boolean isSideContentRotated = isMediaContentRotated(sideImage, leftImageIsVideo);
@@ -21130,7 +21332,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     canvas.scale(-1, 1);
                 }
 
-                sideImage.setAlpha(1.0f);
+                sideImage.setAlpha(transposeGestures ? Math.min(1.0f, Math.abs(transposePagingOffsetY) / containerHeight) : 1.0f);
                 if (isSideContentRotated) {
                     canvas.save();
                     canvas.rotate(90, 0, 0);
@@ -21159,8 +21361,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
             if (seekSpeedDrawable == null || !seekSpeedDrawable.isShown()) {
                 canvas.save();
-                canvas.translate(currentTranslationX, currentTranslationY / currentScale);
-                canvas.translate(-(containerWidth * (scale + 1) + dp(30)) / 2, -currentTranslationY / currentScale);
+                if (transposeGestures) {
+                    canvas.translate(0, resolveTransposeSideOffsetY(containerHeight));
+                } else {
+                    canvas.translate(currentTranslationX, currentTranslationY / currentScale);
+                    canvas.translate(-(containerWidth * (scale + 1) + dp(30)) / 2, -currentTranslationY / currentScale);
+                }
                 photoProgressViews[2].setScale(1.0f);
                 photoProgressViews[2].setAlpha(1.0f);
                 photoProgressViews[2].onDraw(canvas);
@@ -23231,7 +23437,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (centerImage.hasBitmapImage() || drawTextureView && textureUploaded) {
             canvas.save();
             canvas.translate(containerWidth / 2 + getAdditionX(currentEditMode), containerHeight / 2 + getAdditionY(currentEditMode));
-            canvas.translate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0));
+            canvas.translate(translateX, currentTranslationY + (currentEditMode != EDIT_MODE_PAINT ? currentPanTranslationY : 0) + transposePagingOffsetY);
             canvas.scale(currentScale - scaleDiff, currentScale - scaleDiff);
             canvas.rotate(currentRotation);
             if (allowCrossfade) {
