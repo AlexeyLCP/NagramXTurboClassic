@@ -128,6 +128,8 @@
     <string name="ActionButtonStyleNeutral">Нейтральная</string>
     <string name="ActionButtonStyleWhite">Белая</string>
     <string name="NagramXTurbo">Turbo</string>
+    <string name="TurboChannel">Канал</string>
+    <string name="TurboVersion">Версия</string>
     <string name="ForwardingSettings">Пересылка</string>
     <string name="ForwardProtectedMode">Пересылка защищённых сообщений</string>
     <string name="ForwardProtectedModeAsk">Спрашивать</string>

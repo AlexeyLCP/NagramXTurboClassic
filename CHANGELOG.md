@@ -15,6 +15,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 
 ### Settings
 - One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — app icon picker, input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
+- About screen with the project's own links: the Turbo channel, our GitHub repository, and the current build version
 
 ### App identity
 - Own launcher identity: the Turbo theme as the new default and 18 icon themes in three picker sections (Standard / Turbo / hidden easter egg); monochrome icons sized for themed launchers

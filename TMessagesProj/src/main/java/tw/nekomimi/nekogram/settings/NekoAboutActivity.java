@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
@@ -17,22 +18,18 @@ import tw.nekomimi.nekogram.DatacenterActivity;
 
 public class NekoAboutActivity extends BaseNekoSettingsActivity {
 
-    private int xChannelRow;
     private int channelRow;
-    private int channelTipsRow;
     private int sourceCodeRow;
-    private int translationRow;
+    private int versionRow;
     private int datacenterStatusRow;
 
     @Override
     protected void updateRows() {
         super.updateRows();
 
-        xChannelRow = addRow();
         channelRow = addRow();
-        channelTipsRow = addRow();
         sourceCodeRow = addRow();
-        translationRow = addRow();
+        versionRow = addRow();
         datacenterStatusRow = addRow();
     }
 
@@ -43,16 +40,10 @@ public class NekoAboutActivity extends BaseNekoSettingsActivity {
 
     @Override
     protected void onItemClick(View view, int position, float x, float y) {
-        if (position == xChannelRow) {
-            MessagesController.getInstance(currentAccount).openByUserName("NagramX", NekoAboutActivity.this, 1);
-        } else if (position == channelRow) {
-            MessagesController.getInstance(currentAccount).openByUserName("nagram_channel", NekoAboutActivity.this, 1);
-        } else if (position == channelTipsRow) {
-            MessagesController.getInstance(currentAccount).openByUserName("NagramTips", NekoAboutActivity.this, 1);
-        } else if (position == translationRow) {
-            Browser.openUrl(getParentActivity(), "https://crowdin.com/project/NagramX");
+        if (position == channelRow) {
+            MessagesController.getInstance(currentAccount).openByUserName("nagramxturbo", NekoAboutActivity.this, 1);
         } else if (position == sourceCodeRow) {
-            Browser.openUrl(getParentActivity(), "https://github.com/risin42/NagramX");
+            Browser.openUrl(getParentActivity(), "https://github.com/temporaryna/NagramXTurbo");
         } else if (position == datacenterStatusRow) {
             presentFragment(new DatacenterActivity(0));
         }
@@ -73,16 +64,12 @@ public class NekoAboutActivity extends BaseNekoSettingsActivity {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, boolean partial) {
             if (holder.getItemViewType() == TYPE_SETTINGS) {
                 TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
-                if (position == xChannelRow) {
-                    textCell.setTextAndValue(getString(R.string.XChannel), "@NagramX", true);
-                } else if (position == channelRow) {
-                    textCell.setTextAndValue(getString(R.string.OfficialChannel), "@nagram_channel", true);
-                } else if (position == channelTipsRow) {
-                    textCell.setTextAndValue(getString(R.string.TipsChannel), "@" + "NagramTips", true);
+                if (position == channelRow) {
+                    textCell.setTextAndValue(getString(R.string.TurboChannel), "@nagramxturbo", true);
                 } else if (position == sourceCodeRow) {
-                    textCell.setTextAndValue(getString(R.string.SourceCode), "Github", true);
-                } else if (position == translationRow) {
-                    textCell.setTextAndValue(getString(R.string.TransSite), "Crowdin", true);
+                    textCell.setTextAndValue(getString(R.string.SourceCode), "GitHub", true);
+                } else if (position == versionRow) {
+                    textCell.setTextAndValue(getString(R.string.TurboVersion), BuildVars.BUILD_VERSION_STRING, true);
                 } else if (position == datacenterStatusRow) {
                     textCell.setText(getString(R.string.DatacenterStatus), false);
                 }

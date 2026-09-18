@@ -119,6 +119,8 @@
     <string name="ActionButtonStyleNeutral">Neutral</string>
     <string name="ActionButtonStyleWhite">White</string>
     <string name="NagramXTurbo">Turbo</string>
+    <string name="TurboChannel">Channel</string>
+    <string name="TurboVersion">Version</string>
     <string name="ForwardingSettings">Forwarding</string>
     <string name="ForwardProtectedMode">Forward Protected Messages</string>
     <string name="ForwardProtectedModeAsk">Ask</string>
