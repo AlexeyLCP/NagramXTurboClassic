@@ -5780,15 +5780,12 @@
     <string name="EasterEggTapsLeft_other">%1$d taps left until the easter egg</string>
     <string name="AppIconSky">Sky</string>
     <string name="AppIconSunset">Sunset</string>
-    <string name="AppIconGlass">Glass</string>
     <string name="AppIconHexagon">Hexagon</string>
     <string name="AppIconTurbo">Turbo</string>
     <string name="AppIconNeon">Neon</string>
     <string name="AppIconMatrix">Matrix</string>
     <string name="AppIconSpace">Space</string>
     <string name="AppIconHalloween">Halloween</string>
-    <string name="AppIconComixBlue">Comix Blue</string>
-    <string name="AppIconComixPurple">Comix Purple</string>
     <string name="AppIconPaperBox">Paper Box</string>
     <string name="AppIconPaperFire">Paper Fire</string>
     <string name="AppIconPixel">Pixel</string>

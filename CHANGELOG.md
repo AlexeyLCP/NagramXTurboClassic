@@ -18,7 +18,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 - About screen with the project's own links: the Turbo channel, our GitHub repository, and the current build version; opens from the version menu too, with a logo header
 
 ### App identity
-- Own launcher identity: the Turbo theme as the new default and 18 icon themes in three picker sections (Standard / Turbo / hidden easter egg); monochrome icons sized for themed launchers
+- Own launcher identity: the Turbo theme as the new default and 15 icon themes in three picker sections (Standard / Turbo / hidden easter egg); monochrome icons sized for themed launchers
 - "Modern classic" toggle for the classic themes
 - Notification mark follows the app icon — one badge, no duplicates; long-press the preview for a test notification
 

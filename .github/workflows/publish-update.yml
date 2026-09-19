@@ -6,6 +6,9 @@ on:
       headline:
         description: 'Changelog headline (EN, one line per feature; shown outside the quote)'
         required: true
+      sticker_id:
+        description: 'Force update-popup sticker message-id in the metadata channel (empty = random duck)'
+        required: false
 
 permissions:
   contents: write
@@ -213,6 +216,7 @@ jobs:
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
           RELEASE_URL_BASE: ${{ steps.release.outputs.url_base }}
           RELEASE_URL_BASE_ARMEABI_V7A: ${{ steps.release.outputs.url_base_armv7 }}
+          STICKER_MESSAGE_ID: ${{ github.event.inputs.sticker_id }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release

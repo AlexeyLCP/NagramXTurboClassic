@@ -11,8 +11,8 @@ DENSITIES = [("mdpi",1),("hdpi",1.5),("xhdpi",2),("xxhdpi",3),("xxxhdpi",4)]  # 
 BASE = 108  # adaptive canvas dp
 
 THEMES = [
-    "turbo", "sky", "sunset", "blue_night", "halloween", "glass",
-    "paper_box", "paper_fire", "comix_blue", "comix_purple", "carbon",
+    "turbo", "sky", "sunset", "blue_night", "halloween",
+    "paper_box", "paper_fire", "carbon",
     "gold", "matrix", "neon", "space", "hexagon", "pixel", "glitch",
 ]
 
@@ -97,9 +97,7 @@ MONO_FILL_RATIO = 0.89
 
 # user-directed per-theme core overrides: fill = core size (canvas fraction),
 # anchor = core corner pinned to the same corner of the launcher-visible zone
-MOUNT_OVERRIDES = {
-    "comix_blue": {"fill": 0.58, "anchor": "top_right", "v": 64, "h": -48},
-}
+MOUNT_OVERRIDES = {}
 
 VISIBLE_ZONE_INSET = 0.17  # launcher mask shows the central 66% of the canvas
 
