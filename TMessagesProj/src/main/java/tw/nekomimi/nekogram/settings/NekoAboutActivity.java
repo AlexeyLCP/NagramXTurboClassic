@@ -3,21 +3,36 @@ package tw.nekomimi.nekogram.settings;
 import static org.telegram.messenger.LocaleController.getString;
 
 import android.content.Context;
+import android.graphics.Outline;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.TextSettingsCell;
+import org.telegram.ui.Components.LayoutHelper;
+import org.telegram.ui.Components.RecyclerListView;
 
 import tw.nekomimi.nekogram.DatacenterActivity;
 
 public class NekoAboutActivity extends BaseNekoSettingsActivity {
 
+    private static final int TYPE_LOGO_HEADER = 1000;
+
+    private int logoHeaderRow;
     private int channelRow;
     private int sourceCodeRow;
     private int versionRow;
@@ -27,6 +42,7 @@ public class NekoAboutActivity extends BaseNekoSettingsActivity {
     protected void updateRows() {
         super.updateRows();
 
+        logoHeaderRow = addRow();
         channelRow = addRow();
         sourceCodeRow = addRow();
         versionRow = addRow();
@@ -61,6 +77,34 @@ public class NekoAboutActivity extends BaseNekoSettingsActivity {
         }
 
         @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == TYPE_LOGO_HEADER) {
+                FrameLayout logoHeaderCell = new FrameLayout(mContext);
+                logoHeaderCell.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                logoHeaderCell.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
+                ImageView logoImageView = new ImageView(mContext);
+                logoImageView.setImageResource(R.drawable.turbo_logo);
+                logoImageView.setClipToOutline(true);
+                logoImageView.setOutlineProvider(new ViewOutlineProvider() {
+                    @Override
+                    public void getOutline(View view, Outline outline) {
+                        outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), view.getWidth() / 2f);
+                    }
+                });
+                logoHeaderCell.addView(logoImageView, LayoutHelper.createFrame(90, 90, Gravity.CENTER_HORIZONTAL, 0, 15, 0, 0));
+                TextView nameTextView = new TextView(mContext);
+                nameTextView.setText(getString(R.string.NagramX));
+                nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 22);
+                nameTextView.setTypeface(AndroidUtilities.bold());
+                nameTextView.setGravity(Gravity.CENTER);
+                nameTextView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+                logoHeaderCell.addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 115, 16, 10));
+                return new RecyclerListView.Holder(logoHeaderCell);
+            }
+            return super.onCreateViewHolder(parent, viewType);
+        }
+
+        @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, boolean partial) {
             if (holder.getItemViewType() == TYPE_SETTINGS) {
                 TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
@@ -78,6 +122,9 @@ public class NekoAboutActivity extends BaseNekoSettingsActivity {
 
         @Override
         public int getItemViewType(int position) {
+            if (position == logoHeaderRow) {
+                return TYPE_LOGO_HEADER;
+            }
             return TYPE_SETTINGS;
         }
     }

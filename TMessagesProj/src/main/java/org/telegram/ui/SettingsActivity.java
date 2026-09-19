@@ -159,6 +159,7 @@ import tw.nekomimi.nekogram.helpers.MainTabsHelper;
 import tw.nekomimi.nekogram.helpers.MonetHelper;
 import tw.nekomimi.nekogram.helpers.PasscodeHelper;
 import tw.nekomimi.nekogram.helpers.remote.UpdateHelper;
+import tw.nekomimi.nekogram.settings.NekoAboutActivity;
 import tw.nekomimi.nekogram.settings.NekoSettingsActivity;
 import tw.nekomimi.nekogram.ui.BottomBuilder;
 import tw.nekomimi.nekogram.utils.AndroidUtil;
@@ -1547,6 +1548,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return Unit.INSTANCE;
             });
             showDialog(switchBuilder.create());
+            return Unit.INSTANCE;
+        });
+
+        builder.addItem(getString(R.string.About), R.drawable.msg_info, (it) -> {
+            presentFragment(new NekoAboutActivity());
             return Unit.INSTANCE;
         });
         builder.show();
