@@ -75,12 +75,6 @@
     <string name="botCommandConfirmTitle">Enviar comando</string>
     <string name="botCommandConfirmText">Você quer enviar este comando?\n\n%s</string>
     <string name="MessageSavingSaveMedia">Salvar mídia</string>
-    <string name="MessageSavingSaveMediaHint">Clique para mais.</string>
-    <string name="MessageSavingSaveMediaInPrivateChats">... em chats privados</string>
-    <string name="MessageSavingSaveMediaInPublicChannels">... em canais públicos</string>
-    <string name="MessageSavingSaveMediaInPrivateChannels">... em canais privados</string>
-    <string name="MessageSavingSaveMediaInPublicGroups">... em grupos públicos</string>
-    <string name="MessageSavingSaveMediaInPrivateGroups">... em grupos privados</string>
     <string name="TelegramUIAutoTranslate">Traduzir Chats Inteiros</string>
     <string name="Translated">traduzido</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft Tradutor</string>

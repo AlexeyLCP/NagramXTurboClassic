@@ -15,6 +15,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 
 ### Settings
 - One place for all Turbo settings: a dedicated Turbo section in the Nagram X settings — app icon picker, input bar (iOS), action button style, media viewer, forwarding, deleted messages and fonts now live together
+- Deleted messages settings redesign: chat-type categories (private chats, channels, groups) as a two-column Text/Media checkbox list right in the settings instead of hidden popups; all categories are on by default when the feature is first enabled
 - About screen with the project's own links: the Turbo channel, our GitHub repository, and the current build version; opens from the version menu too, with a logo header
 
 ### App identity

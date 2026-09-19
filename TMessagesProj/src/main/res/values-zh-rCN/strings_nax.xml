@@ -76,12 +76,6 @@
     <string name="botCommandConfirmTitle">确认发送</string>
     <string name="botCommandConfirmText">您确定要发送此指令吗？\n\n%s</string>
     <string name="MessageSavingSaveMedia">保存媒体</string>
-    <string name="MessageSavingSaveMediaHint">点击查看更多选项。</string>
-    <string name="MessageSavingSaveMediaInPrivateChats">私聊</string>
-    <string name="MessageSavingSaveMediaInPublicChannels">公开频道</string>
-    <string name="MessageSavingSaveMediaInPrivateChannels">私有频道</string>
-    <string name="MessageSavingSaveMediaInPublicGroups">公开群组</string>
-    <string name="MessageSavingSaveMediaInPrivateGroups">私有群组</string>
     <string name="TelegramUIAutoTranslate">自动翻译</string>
     <string name="Translated">已翻译</string>
     <string name="ProviderRealMicrosoftTranslator">微软翻译</string>

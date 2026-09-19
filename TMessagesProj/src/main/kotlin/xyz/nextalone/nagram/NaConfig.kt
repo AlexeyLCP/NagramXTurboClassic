@@ -607,19 +607,19 @@ object NaConfig {
         addConfig(
             "SaveDeletedInPublicChannels",
             ConfigItem.configTypeBool,
-            false
+            true
         )
     val saveDeletedInPrivateChannels =
         addConfig(
             "SaveDeletedInPrivateChannels",
             ConfigItem.configTypeBool,
-            false
+            true
         )
     val saveDeletedInPublicGroups =
         addConfig(
             "SaveDeletedInPublicGroups",
             ConfigItem.configTypeBool,
-            false
+            true
         )
     val saveDeletedInPrivateGroups =
         addConfig(
@@ -1607,10 +1607,27 @@ object NaConfig {
         }
     }
 
+    private fun freezeSaveDeletedLegacyDefaults() {
+        if (!getPreferences().contains(enableSaveDeletedMessages.key)) {
+            return
+        }
+        val itemsWithFlippedDefaults = listOf(
+            saveDeletedInPublicChannels,
+            saveDeletedInPrivateChannels,
+            saveDeletedInPublicGroups
+        )
+        for (configItem in itemsWithFlippedDefaults) {
+            if (!getPreferences().contains(configItem.key)) {
+                configItem.setConfigBool(false)
+            }
+        }
+    }
+
     private fun fixConfig() {
         if (ApplicationLoader.applicationContext == null) {
             return
         }
+        freezeSaveDeletedLegacyDefaults()
         if (!notificationIconMigrated.Bool()) {
             if (getPreferences().contains(notificationIcon.key)) {
                 when (notificationIcon.Int()) {

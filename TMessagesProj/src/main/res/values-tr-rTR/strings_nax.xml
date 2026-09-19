@@ -76,12 +76,6 @@
     <string name="botCommandConfirmTitle">Komutu Gönder</string>
     <string name="botCommandConfirmText">Bu komutu göndermek istiyor musunuz?\n\n%s</string>
     <string name="MessageSavingSaveMedia">Medyayı Kaydet</string>
-    <string name="MessageSavingSaveMediaHint">Daha fazlası için tıklayın.</string>
-    <string name="MessageSavingSaveMediaInPrivateChats">… Özel Sohbetlerde</string>
-    <string name="MessageSavingSaveMediaInPublicChannels">… Herkese Açık Kanallarda</string>
-    <string name="MessageSavingSaveMediaInPrivateChannels">… Gizli Kanallarda</string>
-    <string name="MessageSavingSaveMediaInPublicGroups">… Herkese Açık Gruplarda</string>
-    <string name="MessageSavingSaveMediaInPrivateGroups">… Gizli Gruplarda</string>
     <string name="TelegramUIAutoTranslate">Tüm Sohbetleri Çevir</string>
     <string name="Translated">çevrildi</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft Translator</string>

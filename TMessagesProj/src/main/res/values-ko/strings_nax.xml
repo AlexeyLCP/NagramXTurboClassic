@@ -76,12 +76,6 @@
     <string name="botCommandConfirmTitle">명령 보내기</string>
     <string name="botCommandConfirmText">이 명령을 보내시겠습니까?\n\n%s</string>
     <string name="MessageSavingSaveMedia">미디어 저장</string>
-    <string name="MessageSavingSaveMediaHint">더 보려면 탭하세요.</string>
-    <string name="MessageSavingSaveMediaInPrivateChats">… 개인 채팅에서</string>
-    <string name="MessageSavingSaveMediaInPublicChannels">… 공개 채널에서</string>
-    <string name="MessageSavingSaveMediaInPrivateChannels">… 비공개 채널에서</string>
-    <string name="MessageSavingSaveMediaInPublicGroups">… 공개 그룹에서</string>
-    <string name="MessageSavingSaveMediaInPrivateGroups">… 비공개 그룹에서</string>
     <string name="TelegramUIAutoTranslate">전체 채팅 번역</string>
     <string name="Translated">번역됨</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft 번역기</string>

@@ -16,6 +16,7 @@ public class ConfigCellCustom extends AbstractConfigCell implements WithKey {
     public static final int CUSTOM_ITEM_AppIconPicker = 987;
     public static final int CUSTOM_ITEM_NotificationPreview = 986;
     public static final int CUSTOM_ITEM_NotificationMarksPicker = 985;
+    public static final int CUSTOM_ITEM_SaveDeletedCategories = 984;
 
     public final int type;
     public boolean enabled;

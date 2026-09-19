@@ -68,12 +68,6 @@
     <string name="botCommandConfirmTitle">Gửi lệnh</string>
     <string name="botCommandConfirmText">Bạn có muốn gửi lệnh này không?\n\n%s</string>
     <string name="MessageSavingSaveMedia">Lưu phương tiện</string>
-    <string name="MessageSavingSaveMediaHint">Nhấn để xem thêm.</string>
-    <string name="MessageSavingSaveMediaInPrivateChats">… trong Trò chuyện riêng tư</string>
-    <string name="MessageSavingSaveMediaInPublicChannels">… trong Kênh công khai</string>
-    <string name="MessageSavingSaveMediaInPrivateChannels">… trong Kênh riêng tư</string>
-    <string name="MessageSavingSaveMediaInPublicGroups">… trong Nhóm công khai</string>
-    <string name="MessageSavingSaveMediaInPrivateGroups">… trong Nhóm riêng tư</string>
     <string name="TelegramUIAutoTranslate">Dịch toàn bộ đoạn chat</string>
     <string name="Translated">đã dịch</string>
     <string name="ProviderRealMicrosoftTranslator">Trình dịch Microsoft</string>
