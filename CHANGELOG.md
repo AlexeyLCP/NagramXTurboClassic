@@ -66,6 +66,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 
 ### Other
 - Bookmarks manager in the chats menu (instead of a settings link)
+- In-app update popup shows a random app icon sticker instead of the ducks; a Halloween one joins the rotation from October 10 to November 3
 
 ## Technical
 - Separate package `nu.gpu.nagramxturbo` — an independent app (doesn't update from Nagram X; chats live on the server)

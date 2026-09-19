@@ -9,11 +9,19 @@ import time
 import urllib.error
 import urllib.request
 import contextlib
+from datetime import datetime
 from pathlib import Path
 from sys import argv
 
 # Pre-posted sticker message-IDs in the metadata channel (reused, not re-posted).
-STICKER_MESSAGE_IDS = list(range(47, 54))
+STICKER_MESSAGE_IDS = {
+    "turbo": 97, "sky": 98, "sunset": 99, "blue_night": 100,
+    "carbon": 101, "matrix": 102, "neon": 103, "space": 104,
+    "hexagon": 105, "pixel": 106, "gold": 107,
+}.values()
+# Seasonal rotation: Halloween sticker joins the pool from Oct 10 to Nov 3 only.
+HALLOWEEN_STICKER_ID = 108
+HALLOWEEN_SEASON = ((10, 10), (11, 3))
 
 API_BASE = "https://api.telegram.org/bot"
 
@@ -215,7 +223,11 @@ def send_manifest(token, chat_id):
     if int(os.environ.get("VERSION_CODE") or 0) <= 0:
         raise RuntimeError("VERSION_CODE env must be a positive integer")
     forced_sticker = os.environ.get("STICKER_MESSAGE_ID")
-    sticker_id = int(forced_sticker) if forced_sticker else random.choice(STICKER_MESSAGE_IDS)
+    pool = list(STICKER_MESSAGE_IDS)
+    today = datetime.now()
+    if HALLOWEEN_STICKER_ID and HALLOWEEN_SEASON[0] <= (today.month, today.day) <= HALLOWEEN_SEASON[1]:
+        pool.append(HALLOWEEN_STICKER_ID)
+    sticker_id = int(forced_sticker) if forced_sticker else random.choice(pool)
     changelog = send_message(token, chat_id, build_changelog_blockquote(4096 - 64))
     changelog_id = changelog["message_id"]
     manifest = build_manifest(sticker_id, changelog_id)
