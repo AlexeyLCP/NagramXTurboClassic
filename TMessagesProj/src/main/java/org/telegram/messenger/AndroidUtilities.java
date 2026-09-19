@@ -259,6 +259,7 @@ public class AndroidUtilities {
     public final static String TYPEFACE_ROBOTO_MEDIUM_ITALIC = "fonts/rmediumitalic.ttf";
     public final static String TYPEFACE_ROBOTO_MONO = "fonts/rmono.ttf";
     public final static String TYPEFACE_MERRIWEATHER_BOLD = "fonts/mw_bold.ttf";
+    public final static String TYPEFACE_MERRIWEATHER_BOLD_ITALIC = "fonts/mw_bolditalic.ttf";
     public static final String TYPEFACE_RITALIC = "fonts/ritalic.ttf";
     public static final String TYPEFACE_RCONDENSED_BOLD = "fonts/rcondensedbold.ttf";
 

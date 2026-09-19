@@ -75,6 +75,7 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Custom fonts now apply to posts with the new markup (text, tables, button labels), the post editor fields and Instant View articles, including code blocks and bold-italic headings
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
 - Crash fix when loading incomplete emoji packs
 - Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Turbo → Media) is on by default

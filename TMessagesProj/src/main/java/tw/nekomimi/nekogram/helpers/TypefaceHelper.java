@@ -72,6 +72,11 @@ public class TypefaceHelper {
 
     // --- Font category management ---
 
+    public static Typeface resolveCustomFont(String category, Typeface fallbackTypeface) {
+        Typeface customTypeface = getCustomFontForCategory(category);
+        return customTypeface != null ? customTypeface : fallbackTypeface;
+    }
+
     public static Typeface getCustomFontForCategory(String category) {
         tw.nekomimi.nekogram.config.ConfigItem config = switch (category) {
             case FONT_CATEGORY_REGULAR -> tw.nekomimi.nekogram.NekoConfig.customFontRegular;
@@ -202,7 +207,8 @@ public class TypefaceHelper {
             case AndroidUtilities.TYPEFACE_ROBOTO_MEDIUM,
                  AndroidUtilities.TYPEFACE_ROBOTO_EXTRA_BOLD,
                  AndroidUtilities.TYPEFACE_RCONDENSED_BOLD,
-                 AndroidUtilities.TYPEFACE_MERRIWEATHER_BOLD -> FONT_CATEGORY_BOLD;
+                 AndroidUtilities.TYPEFACE_MERRIWEATHER_BOLD,
+                 AndroidUtilities.TYPEFACE_MERRIWEATHER_BOLD_ITALIC -> FONT_CATEGORY_BOLD;
             case AndroidUtilities.TYPEFACE_RITALIC,
                  AndroidUtilities.TYPEFACE_ROBOTO_MEDIUM_ITALIC -> FONT_CATEGORY_ITALIC;
             case AndroidUtilities.TYPEFACE_ROBOTO_MONO -> FONT_CATEGORY_MONO;

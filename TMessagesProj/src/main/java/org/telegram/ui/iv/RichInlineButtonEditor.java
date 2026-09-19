@@ -18,7 +18,10 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.AlertDialogDecor;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import android.graphics.Typeface;
+
 import org.telegram.ui.Components.EditTextBoldCursor;
+import tw.nekomimi.nekogram.helpers.TypefaceHelper;
 import org.telegram.ui.Components.ItemOptions;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.DialogsActivity;
@@ -273,6 +276,7 @@ public final class RichInlineButtonEditor {
     private static EditTextBoldCursor createField(Context context, Theme.ResourcesProvider resourcesProvider,
                                                    String hint, String initial) {
         final EditTextBoldCursor field = new EditTextBoldCursor(context);
+        field.setTypeface(TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_REGULAR, Typeface.DEFAULT));
         field.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         field.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
         field.setHintText(hint);

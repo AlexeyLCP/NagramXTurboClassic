@@ -140,6 +140,7 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import me.vkryl.android.util.ClickHelper;
 import me.vkryl.core.BitwiseUtils;
+import tw.nekomimi.nekogram.helpers.TypefaceHelper;
 import tw.nekomimi.nekogram.parts.RichMessageTransHelper;
 
 public class RichMessageLayout {
@@ -225,6 +226,9 @@ public class RichMessageLayout {
         density = AndroidUtilities.density;
         textPaint.setTextSize(dp(fontSize));
         numTextPaint.setTextSize(dp(fontSize));
+        Typeface bodyTypeface = TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_REGULAR, Typeface.DEFAULT);
+        textPaint.setTypeface(bodyTypeface);
+        numTextPaint.setTypeface(bodyTypeface);
     }
 
     /** Uses the message renderer for editable inline buttons without laying out a message. */
@@ -376,6 +380,9 @@ public class RichMessageLayout {
         translatedLanguage = RichMessageTransHelper.getTranslatedLanguage(messageObject);
         textPaint.setTextSize(dp(SharedConfig.fontSize));
         numTextPaint.setTextSize(dp(SharedConfig.fontSize));
+        Typeface bodyTypeface = TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_REGULAR, Typeface.DEFAULT);
+        textPaint.setTypeface(bodyTypeface);
+        numTextPaint.setTypeface(bodyTypeface);
         isPart = false;
 
         richMessage = null;
@@ -2306,16 +2313,16 @@ public class RichMessageLayout {
         public Typeface getTypeface() {
             final int block = flags & TEXT_FLAG_BLOCKS;
             if (block == TEXT_FLAG_BLOCK_CODE) {
-                return Typeface.MONOSPACE;
+                return TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_MONO, Typeface.MONOSPACE);
             } else if (block == TEXT_FLAG_BLOCK_QUOTE_CAPTION) {
                 return AndroidUtilities.bold();
             } else if (block >= 1 && block <= 6) {
                 if (hasFlag(flags, TEXT_FLAG_ITALIC)) {
-                    return AndroidUtilities.getTypeface("fonts/mw_bolditalic.ttf");
+                    return AndroidUtilities.getTypeface(AndroidUtilities.TYPEFACE_MERRIWEATHER_BOLD_ITALIC);
                 }
-                return AndroidUtilities.getTypeface("fonts/mw_bold.ttf");
+                return AndroidUtilities.getTypeface(AndroidUtilities.TYPEFACE_MERRIWEATHER_BOLD);
             } else if (hasFlag(flags, TEXT_FLAG_MONO)) {
-                return Typeface.MONOSPACE;
+                return TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_MONO, Typeface.MONOSPACE);
             }
             final boolean bold = hasFlag(flags, TEXT_FLAG_BOLD);
             final boolean italic = hasFlag(flags, TEXT_FLAG_ITALIC) || block == TEXT_FLAG_BLOCK_PULLQUOTE;

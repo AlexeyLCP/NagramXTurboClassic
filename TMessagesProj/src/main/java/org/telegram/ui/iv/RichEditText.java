@@ -25,7 +25,10 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.tgnet.tl.TL_iv;
 import org.telegram.ui.ActionBar.Theme;
+import android.graphics.Typeface;
+
 import org.telegram.ui.Components.EditTextCaption;
+import tw.nekomimi.nekogram.helpers.TypefaceHelper;
 import org.telegram.ui.Components.LinkPath;
 import org.telegram.ui.Components.TextStyleSpan;
 import org.telegram.ui.Components.URLSpanReplacement;
@@ -133,6 +136,7 @@ public class RichEditText extends EditTextCaption {
         super(context, resourcesProvider);
         this.resourcesProvider = resourcesProvider;
         adaptiveCreateLinkDialog = true;
+        setTypeface(TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_REGULAR, Typeface.DEFAULT));
 
         setBackground(null);
         setCursorWidth(1.5f);
