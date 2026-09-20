@@ -150,6 +150,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     }, null));
     private final AbstractConfigCell showMediaRotateButtonRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowMediaRotateButton()));
     private final AbstractConfigCell scrollToCurrentPhotoRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getScrollToCurrentPhoto(), getString(R.string.ScrollToCurrentPhotoAbout)));
+    private final AbstractConfigCell showDateInBubbleRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowDateInBubble(), getString(R.string.ShowDateInBubbleAbout)));
     private final AbstractConfigCell photoViewerHdrRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.photoViewerHdr, getString(R.string.PhotoViewerHdrAbout)));
     private final AbstractConfigCell dividerMedia = cellGroup.appendCell(new ConfigCellDivider());
 
@@ -305,6 +306,9 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 if (inputBarPreviewCell != null) {
                     inputBarPreviewCell.updateInputBarState();
                 }
+            }
+            if (key.equals(NaConfig.INSTANCE.getShowDateInBubble().getKey())) {
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.reloadInterface);
             }
             if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
                 boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();

@@ -52,6 +52,9 @@ Synced with the final Nagram X release (12.10.0). User-visible from upstream sin
 ### Deleted messages
 - Filtering by chat category
 
+### Chat
+- Message date in bubbles (Turbo → Media, off by default): the sending date next to the time in every message — no need to open the message details to see when it was sent
+
 ### Input field
 - iOS-style input bar (Turbo → Input Bar, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
 - Action button style (Turbo → Input Bar): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle

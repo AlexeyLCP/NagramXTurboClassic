@@ -1413,6 +1413,12 @@ object NaConfig {
             ConfigItem.configTypeInt,
             0
         )
+    val showDateInBubble =
+        addConfig(
+            "ShowDateInBubble",
+            ConfigItem.configTypeBool,
+            false
+        )
     val forwardProtectedMode =
         addConfig(
             "ForwardProtectedMode",
