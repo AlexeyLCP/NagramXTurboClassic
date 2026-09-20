@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 
 import org.telegram.messenger.utils.DrawableUtils;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Components.ActionButtonStyle;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.TypingDotsDrawable;
 
@@ -26,8 +27,11 @@ public class SendButtonBlockedByTypingView extends View {
 
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint neutralStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint stopSquarePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Theme.ResourcesProvider resourcesProvider;
     private final TypingDotsDrawable typingDotsDrawable;
+    private int lastTypingDotsColor;
 
     public SendButtonBlockedByTypingView(Context context, Theme.ResourcesProvider resourcesProvider) {
         super(context);
@@ -73,8 +77,20 @@ public class SendButtonBlockedByTypingView extends View {
         final float cy = getHeight() / 2f;
 
         super.onDraw(canvas);
-        paint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
+        paint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
         canvas.drawCircle(cx, cy, dp(19), paint);
+        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+            neutralStrokePaint.setStyle(Paint.Style.STROKE);
+            neutralStrokePaint.setStrokeWidth(dp(1));
+            neutralStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+            canvas.drawCircle(cx, cy, dp(19) - dp(0.5f), neutralStrokePaint);
+        }
+
+        int typingIconColor = ActionButtonStyle.resolveIconColor(resourcesProvider);
+        if (typingIconColor != lastTypingDotsColor) {
+            lastTypingDotsColor = typingIconColor;
+            typingDotsDrawable.setColor(typingIconColor);
+        }
 
         final float factorStop = animatorStopAllowed.getFloatValue();
         final float factorDots = 1f - factorStop;
@@ -85,7 +101,8 @@ public class SendButtonBlockedByTypingView extends View {
         if (factorStop > 0) {
             final float s = dp(6.666f) * factorStop;
             final float r = dp(2.666f) * factorStop;
-            canvas.drawRoundRect(cx - s, cy - s, cx + s, cy + s, r, r, Theme.fillingPaint(0xFFFFFFFF));
+            stopSquarePaint.setColor(typingIconColor);
+            canvas.drawRoundRect(cx - s, cy - s, cx + s, cy + s, r, r, stopSquarePaint);
         }
     }
 }

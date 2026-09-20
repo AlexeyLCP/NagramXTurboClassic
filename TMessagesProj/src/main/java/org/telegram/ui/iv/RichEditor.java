@@ -1002,7 +1002,14 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
                 return false;
             }
         };
-        sendButton.setBackground(withShadow(Theme.createRoundRectDrawable(dp(22), ActionButtonStyle.resolveBackgroundColor(getResourceProvider()))));
+        GradientDrawable sendButtonBackground = new GradientDrawable();
+        sendButtonBackground.setShape(GradientDrawable.RECTANGLE);
+        sendButtonBackground.setCornerRadius(AndroidUtilities.dp(22));
+        sendButtonBackground.setColor(ActionButtonStyle.resolveBackgroundColor(getResourceProvider()));
+        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+            sendButtonBackground.setStroke(AndroidUtilities.dp(1), ActionButtonStyle.resolveStrokeColor(getResourceProvider()));
+        }
+        sendButton.setBackground(withShadow(sendButtonBackground));
         ScaleStateListAnimator.apply(sendButton);
         bottomPanel.addView(sendButton, LayoutHelper.createLinear(44, 44, 0, Gravity.RIGHT, 8, 0, 0, 0));
         sendButton.setContentDescription(getString(R.string.Send));

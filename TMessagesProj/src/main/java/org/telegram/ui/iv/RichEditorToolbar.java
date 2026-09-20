@@ -414,7 +414,14 @@ public class RichEditorToolbar extends FrameLayout {
                 return false;
             }
         };
-        sendButton.setBackground(RichEditor.withShadow(Theme.createRoundRectDrawable(dp(22), ActionButtonStyle.resolveBackgroundColor(resourcesProvider))));
+        GradientDrawable sendButtonBackground = new GradientDrawable();
+        sendButtonBackground.setShape(GradientDrawable.RECTANGLE);
+        sendButtonBackground.setCornerRadius(dp(22));
+        sendButtonBackground.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
+        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+            sendButtonBackground.setStroke(dp(1), ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+        }
+        sendButton.setBackground(RichEditor.withShadow(sendButtonBackground));
         ScaleStateListAnimator.apply(sendButton);
         bottomPanel.addView(sendButton, LayoutHelper.createLinear(44, 44, 0, Gravity.RIGHT, 8, 0, 0, 0));
         sendButton.setContentDescription("Send");

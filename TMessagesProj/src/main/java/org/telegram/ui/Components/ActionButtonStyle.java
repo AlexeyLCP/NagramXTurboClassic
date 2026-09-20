@@ -30,6 +30,13 @@ public final class ActionButtonStyle {
         return Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
     }
 
+    public static int resolveStrokeColor(Theme.ResourcesProvider resourcesProvider) {
+        if (getCurrentStyle() == WHITE) {
+            return Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
+        }
+        return Theme.getColor(Theme.key_chat_messagePanelIcons, resourcesProvider);
+    }
+
     public static int resolveIconColor(Theme.ResourcesProvider resourcesProvider) {
         int style = getCurrentStyle();
         if (style == NEUTRAL) {

@@ -3372,6 +3372,19 @@ public class ChatActivityEnterView extends FrameLayout implements
                         voiceBubbleDrawable.setBounds(getMeasuredWidth() - dp(DEFAULT_HEIGHT), getMeasuredHeight() - dp(DEFAULT_HEIGHT), getMeasuredWidth(), getMeasuredHeight());
                         voiceBubbleDrawable.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
                         DrawableUtils.drawWithScale(canvas, voiceBubbleDrawable, audioVideoSendButton.getScaleX());
+                        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                            neutralBubbleStrokePaint.setStyle(Paint.Style.STROKE);
+                            neutralBubbleStrokePaint.setStrokeWidth(dpf2(1));
+                            neutralBubbleStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                            neutralBubbleStrokePaint.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
+                            backgroundRect.set(
+                                    getMeasuredWidth() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
+                                    getMeasuredHeight() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
+                                    getMeasuredWidth() - dpf2(0.5f),
+                                    getMeasuredHeight() - dpf2(0.5f)
+                            );
+                            canvas.drawRoundRect(backgroundRect, dpf2(IOS_BUBBLE_RADIUS_DP), dpf2(IOS_BUBBLE_RADIUS_DP), neutralBubbleStrokePaint);
+                        }
                     } else {
                         final float r = dpf2(19);
                         paint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
@@ -3385,6 +3398,15 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 getMeasuredHeight() - margin
                         );
                         canvas.drawRoundRect(backgroundRect, r, r, paint);
+                        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                            int ovalFillColor = paint.getColor();
+                            paint.setStyle(Paint.Style.STROKE);
+                            paint.setStrokeWidth(dpf2(1));
+                            paint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                            canvas.drawRoundRect(backgroundRect, r, r, paint);
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setColor(ovalFillColor);
+                        }
                     }
                     canvas.restore();
                 }
@@ -5069,6 +5091,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     Paint backgroundPaint = new Paint();
+    private final Paint neutralBubbleStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float composeShadowAlpha = 1f;
     private Rect blurBounds = new Rect();
 
@@ -9455,8 +9478,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 animators.add(ObjectAnimator.ofFloat(attachButton, View.SCALE_Y, 0.5f));
                             }
                             boolean hasScheduled = delegate != null && delegate.hasScheduledMessages();
-                            scheduleButtonHidden = true;
-                            if (scheduledButton != null) {
+                            scheduleButtonHidden = !isIosButtonPlacement();
+                            if (scheduledButton != null && !isIosButtonPlacement()) {
                                 scheduledButton.setScaleY(1.0f);
                                 if (hasScheduled) {
                                     scheduledButton.setTag(null);
@@ -9476,7 +9499,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 public void onAnimationEnd(Animator animation) {
                                     if (animation.equals(runningAnimation2)) {
                                         attachLayout.setVisibility(GONE);
-                                        if (hasScheduled && scheduledButton != null) {
+                                        if (hasScheduled && scheduledButton != null && !isIosButtonPlacement()) {
                                             scheduledButton.setVisibility(GONE);
                                         }
                                         runningAnimation2 = null;
@@ -9639,8 +9662,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                             updateFieldRight(1);
                         }
                     }
-                    scheduleButtonHidden = true;
-                    if (scheduledButton != null) {
+                    scheduleButtonHidden = !isIosButtonPlacement();
+                    if (scheduledButton != null && !isIosButtonPlacement()) {
                         if (delegate != null && delegate.hasScheduledMessages()) {
                             scheduledButton.setVisibility(GONE);
                             scheduledButton.setTag(null);
@@ -16574,6 +16597,10 @@ public class ChatActivityEnterView extends FrameLayout implements
         public boolean center;
 
         private final Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint neutralStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF neutralStrokeRect = new RectF();
+        private int lastCountTextColor;
+        private int lastInverseIconColor;
 
         public SendButton(Context context, int resId, Theme.ResourcesProvider resourcesProvider) {
             this(context, resId, resourcesProvider, false);
@@ -16642,6 +16669,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                 drawable = getContext().getResources().getDrawable(resId).mutate();
                 inactiveDrawable = getContext().getResources().getDrawable(resId).mutate();
                 drawableInverse = getContext().getResources().getDrawable(resId).mutate();
+                drawableColor = 0;
+                lastInverseIconColor = 0;
                 invalidate();
             }
         }
@@ -16843,6 +16872,14 @@ public class ChatActivityEnterView extends FrameLayout implements
             checkBackgroundRect();
             if (isNewDesignSendButton && shouldDrawInternalCircle()) {
                 canvas.drawRoundRect(backgroundRect, dp(RADIUS), dp(RADIUS), backgroundPaint);
+                if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                    neutralStrokePaint.setStyle(Paint.Style.STROKE);
+                    neutralStrokePaint.setStrokeWidth(dpf2(1));
+                    neutralStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                    neutralStrokeRect.set(backgroundRect);
+                    neutralStrokeRect.inset(dpf2(0.5f), dpf2(0.5f));
+                    canvas.drawRoundRect(neutralStrokeRect, dp(RADIUS), dp(RADIUS), neutralStrokePaint);
+                }
             }
 
             final boolean inactive = isInactive();
@@ -16935,6 +16972,13 @@ public class ChatActivityEnterView extends FrameLayout implements
 
                 if (!isNewDesignSendButton && shouldDrawInternalCircle()) {
                     canvas.drawPath(path, backgroundPaint);
+                    if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                        neutralStrokePaint.setStyle(Paint.Style.STROKE);
+                        neutralStrokePaint.setStrokeWidth(dpf2(1));
+                        neutralStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                        neutralStrokePaint.setAlpha(backgroundPaint.getAlpha());
+                        canvas.drawPath(path, neutralStrokePaint);
+                    }
                 }
                 canvas.clipPath(path);
                 if (loadingShown > 0) {
@@ -17008,6 +17052,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                     if (!isNewDesignSendButton) {
                         canvas.drawCircle(_cx, _cy, (sz / 2f + dp(2)) * countScale * countBounceScale, Theme.PAINT_CLEAR);
                         canvas.drawCircle(_cx, _cy, sz / 2f * countScale * countBounceScale, backgroundPaint);
+                        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                            neutralStrokePaint.setStyle(Paint.Style.STROKE);
+                            neutralStrokePaint.setStrokeWidth(dpf2(1));
+                            neutralStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                            canvas.drawCircle(_cx, _cy, Math.max(0, sz / 2f * countScale * countBounceScale - dpf2(0.5f)), neutralStrokePaint);
+                        }
                     }
                     count.setAlpha((int) (0xFF * countScale));
                     count.draw(canvas);
@@ -17132,7 +17182,18 @@ public class ChatActivityEnterView extends FrameLayout implements
                 drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
                 int c = Theme.getColor(Theme.key_glass_defaultIcon, resourcesProvider);
                 inactiveDrawable.setColorFilter(new PorterDuffColorFilter(Color.argb(0xb4, Color.red(c), Color.green(c), Color.blue(c)), PorterDuff.Mode.SRC_IN));
-                drawableInverse.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider), PorterDuff.Mode.SRC_IN));
+            }
+            int inverseIconColor = ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.ACCENT
+                    ? Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider)
+                    : ActionButtonStyle.resolveIconColor(resourcesProvider);
+            if (inverseIconColor != lastInverseIconColor) {
+                lastInverseIconColor = inverseIconColor;
+                drawableInverse.setColorFilter(new PorterDuffColorFilter(inverseIconColor, PorterDuff.Mode.SRC_IN));
+            }
+            int countTextColor = ActionButtonStyle.resolveIconColor(resourcesProvider);
+            if (countTextColor != lastCountTextColor) {
+                lastCountTextColor = countTextColor;
+                count.setTextColor(countTextColor);
             }
             if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT && shouldUseActionStyleColors()) {
                 backgroundPaint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));

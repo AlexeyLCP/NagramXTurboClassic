@@ -887,7 +887,17 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 sendCirclePaint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
                 float sendCx = (sendIconView.getLeft() + sendIconView.getRight()) / 2f;
                 float sendCy = (sendIconView.getTop() + sendIconView.getBottom()) / 2f;
-                canvas.drawCircle(sendCx, sendCy, (sendIconView.getRight() - sendIconView.getLeft()) / 2f - AndroidUtilities.dp(3), sendCirclePaint);
+                float sendCircleRadius = (sendIconView.getRight() - sendIconView.getLeft()) / 2f - AndroidUtilities.dp(3);
+                canvas.drawCircle(sendCx, sendCy, sendCircleRadius, sendCirclePaint);
+                if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
+                    int sendCircleFillColor = sendCirclePaint.getColor();
+                    sendCirclePaint.setStyle(Paint.Style.STROKE);
+                    sendCirclePaint.setStrokeWidth(AndroidUtilities.dp(1));
+                    sendCirclePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
+                    canvas.drawCircle(sendCx, sendCy, sendCircleRadius - AndroidUtilities.dp(0.5f), sendCirclePaint);
+                    sendCirclePaint.setStyle(Paint.Style.FILL);
+                    sendCirclePaint.setColor(sendCircleFillColor);
+                }
             }
             super.dispatchDraw(canvas);
         }
