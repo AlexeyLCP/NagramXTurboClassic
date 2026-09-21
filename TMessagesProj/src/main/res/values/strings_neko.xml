@@ -306,4 +306,5 @@
     <string name="FoldersReset">Reset</string>
     <string name="FoldersSecretAll">Secret chats can\'t be added to a folder.</string>
     <string name="FoldersSecretMixed">Secret chats can\'t be added to a folder. Adding only regular chats.</string>
+    <string name="DeletedMediaFileMissing">Media file not found</string>
 </resources>

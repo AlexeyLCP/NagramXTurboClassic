@@ -304,4 +304,5 @@
     <string name="FoldersReset">Сбросить</string>
     <string name="FoldersSecretAll">Секретные чаты нельзя добавить в папку.</string>
     <string name="FoldersSecretMixed">Секретные чаты нельзя добавить в папку. Добавляю только обычные.</string>
+    <string name="DeletedMediaFileMissing">Файл медиа не найден</string>
 </resources>

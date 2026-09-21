@@ -865,17 +865,40 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                                 ).show();
                             }
                         });
+                    } else if (msg.getDocument() == null && !msg.isLivePhoto()) {
+                        BulletinFactory.of(this).createErrorBulletin(getString(R.string.DeletedMediaFileMissing), getResourceProvider()).show();
+                    } else {
+                        ArrayList<MessageObject> downloadList = new ArrayList<>();
+                        downloadList.add(msg);
+                        MediaController.saveFilesFromMessages(getParentActivity(), getAccountInstance(), downloadList, (count) -> {
+                            if (getParentActivity() == null) {
+                                return;
+                            }
+                            if (count > 0) {
+                                BulletinFactory.of(this).createDownloadBulletin(
+                                        msg.isVideo() ? BulletinFactory.FileType.VIDEO_TO_DOWNLOADS : BulletinFactory.FileType.PHOTO_TO_DOWNLOADS,
+                                        getResourceProvider()
+                                ).show();
+                            } else {
+                                BulletinFactory.of(this).createErrorBulletin(getString(R.string.DeletedMediaFileMissing), getResourceProvider()).show();
+                            }
+                        });
                     }
                 } else if (option == OPTION_SAVE_TO_DOWNLOADS) {
                     ArrayList<MessageObject> messageObjects = new ArrayList<>();
                     messageObjects.add(msg);
                     MediaController.saveFilesFromMessages(getParentActivity(), getAccountInstance(), messageObjects, (count) -> {
+                        if (getParentActivity() == null) {
+                            return;
+                        }
                         if (count > 0) {
                             BulletinFactory.of(this).createDownloadBulletin(
                                     msg.isMusic() ? BulletinFactory.FileType.AUDIOS : BulletinFactory.FileType.UNKNOWNS,
                                     count,
                                     getResourceProvider()
                             ).show();
+                        } else {
+                            BulletinFactory.of(this).createErrorBulletin(getString(R.string.DeletedMediaFileMissing), getResourceProvider()).show();
                         }
                     });
                 } else if (option == OPTION_DETAILS) {
@@ -1095,8 +1118,26 @@ public class AyuViewDeleted extends NekoDelegateFragment {
     @SuppressLint("NotifyDataSetChanged")
     private void notifyAdapterDataChanged() {
         var adapter = listView == null ? null : listView.getAdapter();
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+        if (adapter == null) {
+            return;
+        }
+        boolean atBottom = !listView.canScrollVertically(1);
+        DeletedMessageFull anchorMessage = null;
+        int anchorTop = 0;
+        if (!atBottom && layoutManager != null) {
+            int firstPos = layoutManager.findFirstVisibleItemPosition();
+            if (firstPos >= 0 && firstPos < filteredMessages.size()) {
+                anchorMessage = filteredMessages.get(firstPos);
+                View firstView = layoutManager.findViewByPosition(firstPos);
+                anchorTop = firstView != null ? firstView.getTop() : 0;
+            }
+        }
+        adapter.notifyDataSetChanged();
+        if (!atBottom && anchorMessage != null && layoutManager != null) {
+            int anchorPosition = filteredMessages.indexOf(anchorMessage);
+            if (anchorPosition != RecyclerView.NO_POSITION) {
+                layoutManager.scrollToPositionWithOffset(anchorPosition, anchorTop);
+            }
         }
     }
 
