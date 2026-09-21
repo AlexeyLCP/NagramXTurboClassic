@@ -32,7 +32,9 @@ public final class ActionButtonStyle {
 
     public static int resolveStrokeColor(Theme.ResourcesProvider resourcesProvider) {
         if (getCurrentStyle() == WHITE) {
-            return Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
+            return Theme.isCurrentThemeDark()
+                    ? Color.TRANSPARENT
+                    : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
         }
         return Theme.getColor(Theme.key_chat_messagePanelIcons, resourcesProvider);
     }
