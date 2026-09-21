@@ -91,7 +91,7 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
                 if (valueIconDrawable != null) {
                     valueIconDrawable.recycle(true);
                 }
-                valueIconDrawable = new RLottieDrawable(valueIconRes, "value_icon_" + selectedIndex, AndroidUtilities.dp(18), AndroidUtilities.dp(18), true, null);
+                valueIconDrawable = new RLottieDrawable(valueIconRes, AndroidUtilities.dp(18), AndroidUtilities.dp(18), true, null);
                 lastValueIconRawRes = valueIconRes;
             }
             valueIconDrawable.setBounds(0, 0, AndroidUtilities.dp(18), AndroidUtilities.dp(18));
@@ -126,7 +126,7 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
         if (itemIconRawRes != null && itemIconRawRes.length == selectList.length) {
             itemIcons = new Drawable[selectList.length];
             for (int i = 0; i < itemIcons.length; i++) {
-                RLottieDrawable iconDrawable = new RLottieDrawable(itemIconRawRes[i], "popup_icon_" + i, AndroidUtilities.dp(24), AndroidUtilities.dp(24), true, null);
+                RLottieDrawable iconDrawable = new RLottieDrawable(itemIconRawRes[i], AndroidUtilities.dp(24), AndroidUtilities.dp(24), true, null);
                 iconDrawable.start();
                 itemIcons[i] = iconDrawable;
             }

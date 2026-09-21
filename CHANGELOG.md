@@ -4,8 +4,10 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ## Upstream
 
-Synced with the final Nagram X release (12.10.0). User-visible from upstream since 12.9.2:
+Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Welcome Messages for groups: auto-greet new members, admin permissions, revert to original
+- WEB proxies: web-proxy transport in the proxy list (bypass blocking without MTProto)
+- Upstream fixes and improvements from 12.10.1–12.10.3 (voip vibration, media player, misc)
 - Link / copy-text / profile buttons in the rich editor for channel posts; table styling in articles
 - Gift messages: add a note to a gift, preview in chat, make the message public
 - "Joined via community" service messages

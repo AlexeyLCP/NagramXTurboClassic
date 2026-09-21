@@ -306,7 +306,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
     private RLottieImageView createToggleButton(int rawRes, int index) {
         RLottieImageView button = new RLottieImageView(getContext());
-        RLottieDrawable icon = new RLottieDrawable(rawRes, "toggle_" + index, dp(24), dp(24), true, null);
+        RLottieDrawable icon = new RLottieDrawable(rawRes, dp(24), dp(24), true, null);
         icon.setAllowDecodeSingleFrame(true);
         icon.setPlayInDirectionOfCustomEndFrame(true);
         icon.start();
@@ -361,12 +361,12 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         toggleButtonView.setContentDescription(getToggleDescription(index));
 
         if (index == 0) {
-            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.name_hide : R.raw.name_show, "toggle_author", dp(24), dp(24), true, null);
+            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.name_hide : R.raw.name_show, dp(24), dp(24), true, null);
             icon.setAllowDecodeSingleFrame(true);
             toggleButtonView.setAnimation(icon);
             icon.start();
         } else if (index == 1) {
-            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.caption_hide : R.raw.caption_show, "toggle_caption", dp(24), dp(24), true, null);
+            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.caption_hide : R.raw.caption_show, dp(24), dp(24), true, null);
             icon.setAllowDecodeSingleFrame(true);
             toggleButtonView.setAnimation(icon);
             icon.start();
@@ -2481,7 +2481,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         writeButton.setOnLongClickListener(v -> onSendLongClick(writeButton));
 
         if (sendingMessageObjects != null && !sendingMessageObjects.isEmpty()) {
-            RLottieDrawable forwardCommentToggleIcon = new RLottieDrawable(R.raw.forward_comment_toggle, "forward_comment_toggle", dp(28), dp(28), true, null);
+            RLottieDrawable forwardCommentToggleIcon = new RLottieDrawable(R.raw.forward_comment_toggle, dp(28), dp(28), true, null);
             forwardCommentToggleIcon.setAllowDecodeSingleFrame(true);
             forwardCommentToggleIcon.setPlayInDirectionOfCustomEndFrame(true);
             forwardCommentToggleIcon.start();

@@ -6,7 +6,7 @@
 
 A fork of the [Nagram X](https://github.com/risin42/NagramX) **Telegram client for Android** with bug fixes and focused UX tweaks — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package (`nu.gpu.nagramxturbo`), keystore and remote-config: an independent app that installs alongside Nagram X or the official Telegram client (chats are shared per account).
 
-Based on Nagram X [12.10.0-a6c7d0a](https://github.com/risin42/NagramX/commit/a6c7d0aec95f829a63aaa7bc591b8e809af84636) — the final Nagram X release (the project is now archived). Turbo continues with Telegram updates applied directly from the official client source.
+Based on Nagram X [12.10.0-a6c7d0a](https://github.com/risin42/NagramX/commit/a6c7d0aec95f829a63aaa7bc591b8e809af84636) — the final Nagram X release (the project is now archived) — with Telegram updates applied directly from the official client source; currently synced to Telegram [12.10.3-9552e55](https://github.com/DrKLO/Telegram/commit/9552e5541e4eb9d9d1a9b5b17e2ea53b1f59b637).
 
 Turbo updates on its own — in-app updates work independently of Nagram X.
 
@@ -47,6 +47,8 @@ Full list & history — [CHANGELOG.md](CHANGELOG.md).
 - Signing certificate SHA-256: `97:A8:4E:DE:76:3B:91:F4:F3:C8:6D:AD:1F:27:BD:1A:20:61:84:81:4A:DA:B1:B5:B7:10:13:45:E8:E6:AE:8D`
 
 ## Build
+
+You will require Android Studio, Android NDK 27.2.12479018 and Android SDK 36/37.
 
 1. Clone with submodules (third_party — ffmpeg/dav1d/libvpx — are submodules):
    ```bash
