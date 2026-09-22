@@ -194,7 +194,7 @@ android {
             debuggable = false
             jniDebuggable = false
             minifyEnabled = true
-            shrinkResources = false
+            shrinkResources = true
             multiDexEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (isTurboBase) {
@@ -208,7 +208,7 @@ android {
             debuggable = false
             jniDebuggable = false
             minifyEnabled = true
-            shrinkResources = false
+            shrinkResources = true
             multiDexEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (isTurboBase) {
