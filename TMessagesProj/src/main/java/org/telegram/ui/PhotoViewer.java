@@ -5043,6 +5043,16 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                                 }
                             } else {
                                 f = FileLoader.getInstance(currentAccount).getPathToMessage(currentMessageObject.messageOwner);
+                                if ((f == null || !f.exists()) && !BuildVars.TURBO_BASE && currentMessageObject.messageOwner.ayuDeleted) {
+                                    com.radolyn.ayugram.database.entities.DeletedMessageFull ayuFull = com.radolyn.ayugram.messages.AyuMessagesController.getInstance().getMessage(
+                                            UserConfig.getInstance(currentAccount).getClientUserId(), currentMessageObject.getDialogId(), currentMessageObject.getId());
+                                    if (ayuFull != null && !TextUtils.isEmpty(ayuFull.message.mediaPath)) {
+                                        File ayuCopy = new File(ayuFull.message.mediaPath);
+                                        if (ayuCopy.exists()) {
+                                            f = ayuCopy;
+                                        }
+                                    }
+                                }
                             }
                             isVideo = currentMessageObject.isVideo();
                         } else if (currentFileLocationVideo != null) {

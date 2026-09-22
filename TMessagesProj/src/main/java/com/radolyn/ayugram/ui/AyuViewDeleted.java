@@ -851,13 +851,27 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                         }
                     }
                     if (TextUtils.isEmpty(path)) {
+                        DeletedMessageFull full = messageIdMap.get(msg.getId());
+                        if (full != null && !TextUtils.isEmpty(full.message.mediaPath)) {
+                            File ayuCopy = new File(full.message.mediaPath);
+                            if (ayuCopy.exists()) {
+                                path = ayuCopy.getPath();
+                            }
+                        }
+                    }
+                    if (TextUtils.isEmpty(path)) {
                         File f = FileLoader.getInstance(getCurrentAccount()).getPathToMessage(msg.messageOwner);
                         if (f != null && f.exists()) {
                             path = f.getPath();
                         }
                     }
                     if (!TextUtils.isEmpty(path)) {
+                        int saveNotificationId = tw.nekomimi.nekogram.SaveToDownloadReceiver.createNotificationId();
+                        if (getParentActivity() != null) {
+                            tw.nekomimi.nekogram.SaveToDownloadReceiver.showNotification(getParentActivity(), saveNotificationId, 1, () -> tw.nekomimi.nekogram.SaveToDownloadReceiver.cancelNotification(saveNotificationId));
+                        }
                         MediaController.saveFile(msg, path, getParentActivity(), msg.isVideo() ? 1 : 0, null, null, uri -> {
+                            tw.nekomimi.nekogram.SaveToDownloadReceiver.cancelNotification(saveNotificationId);
                             if (getParentActivity() != null) {
                                 BulletinFactory.of(this).createDownloadBulletin(
                                         msg.isVideo() ? BulletinFactory.FileType.VIDEO : BulletinFactory.FileType.PHOTO,
