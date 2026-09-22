@@ -592,6 +592,7 @@
 
         <activity
             android:name="org.telegram.ui.LaunchActivity"
+            android:label="@string/NagramX"
             android:theme="@style/Theme.TMessages.Start"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode|smallestScreenSize|screenLayout"
             android:supportsPictureInPicture="true"

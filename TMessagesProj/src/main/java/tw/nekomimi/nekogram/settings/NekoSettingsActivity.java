@@ -407,8 +407,16 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
                 case TYPE_TEXT: {
                     TextCell textCell = (TextCell) holder.itemView;
         if (position == sideMenuRow) {
-            if (getParentActivity() instanceof LaunchActivity) {
-                ClassicSideMenu.toggle((LaunchActivity) getParentActivity());
+            boolean on = xyz.nextalone.nagram.NaConfig.INSTANCE.getHideBottomNavigationBar().toggleConfigBool();
+            if (view instanceof TextCheckCell) {
+                ((TextCheckCell) view).setChecked(on);
+            }
+            LaunchActivity activity = getParentActivity() instanceof LaunchActivity ? (LaunchActivity) getParentActivity() : LaunchActivity.instance;
+            if (activity != null) {
+                ClassicSideMenu.attach(activity);
+                if (activity.drawerLayoutContainer != null && activity.drawerLayoutContainer.getParentActionBarLayout() != null) {
+                    activity.drawerLayoutContainer.getParentActionBarLayout().rebuildFragments(0);
+                }
             }
         } else if (position == chatRow) {
                         textCell.setTextAndIcon(getString(R.string.Chat), R.drawable.msg_discussion, true);

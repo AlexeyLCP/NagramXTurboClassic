@@ -41,8 +41,10 @@ public class LauncherIconController {
             if (!hasEnabledAlias(pm, ctx, LauncherIcon.TURBO)) {
                 setIcon(LauncherIcon.TURBO);
             }
+            refreshLauncherLabelOnce(ctx);
             return;
         }
+        refreshLauncherLabelOnce(ctx);
         if (firstEnabled != LauncherIcon.TURBO) {
             applyComponentState(pm, ctx, LauncherIcon.TURBO.getComponentName(ctx), PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         }
@@ -143,6 +145,15 @@ public class LauncherIconController {
 
     private static ComponentName component(Context ctx, String key) {
         return new ComponentName(ctx.getPackageName(), "org.telegram.messenger." + key);
+    }
+
+    private static void refreshLauncherLabelOnce(Context ctx) {
+        android.content.SharedPreferences prefs = ctx.getSharedPreferences("nekox_config", Context.MODE_PRIVATE);
+        if (prefs.getBoolean("launcher_label_nagram_classic", false)) {
+            return;
+        }
+        prefs.edit().putBoolean("launcher_label_nagram_classic", true).apply();
+        setIcon(getActiveIcon());
     }
 
     private static void applyComponentState(PackageManager pm, Context ctx, ComponentName cn, int state) {
