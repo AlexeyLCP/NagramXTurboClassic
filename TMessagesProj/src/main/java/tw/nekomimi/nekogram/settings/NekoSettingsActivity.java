@@ -36,6 +36,9 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.Cells.TextCheckCell;
+import org.telegram.ui.ClassicSideMenu;
+import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
@@ -69,6 +72,7 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
     private static final int MENU_SEARCH = 1;
     private static final int MENU_SYNC = 2;
 
+    private int sideMenuRow;
     private int generalRow;
     private int translatorRow;
     private int chatRow;
@@ -90,6 +94,7 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
     protected void updateRows() {
         super.updateRows();
 
+        sideMenuRow = addRow();
         generalRow = addRow();
         translatorRow = addRow();
         chatRow = addRow();
@@ -394,9 +399,18 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
                     holder.itemView.setBackground(Theme.getThemedDrawable(mContext, R.drawable.greydivider, Theme.key_windowBackgroundGrayShadow));
                     break;
                 }
+                case TYPE_CHECK: {
+                    TextCheckCell cell = (TextCheckCell) holder.itemView;
+                    cell.setTextAndCheck(getString(R.string.HideBottomNavigationBar), xyz.nextalone.nagram.NaConfig.INSTANCE.getHideBottomNavigationBar().Bool(), true);
+                    break;
+                }
                 case TYPE_TEXT: {
                     TextCell textCell = (TextCell) holder.itemView;
-                    if (position == chatRow) {
+        if (position == sideMenuRow) {
+            if (getParentActivity() instanceof LaunchActivity) {
+                ClassicSideMenu.toggle((LaunchActivity) getParentActivity());
+            }
+        } else if (position == chatRow) {
                         textCell.setTextAndIcon(getString(R.string.Chat), R.drawable.msg_discussion, true);
                     } else if (position == generalRow) {
                         textCell.setTextAndIcon(getString(R.string.General), R.drawable.msg_theme, true);
@@ -427,7 +441,9 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == categoriesEndRow || position == nSettingsEndRow) {
+            if (position == sideMenuRow) {
+                return TYPE_CHECK;
+            } else if (position == categoriesEndRow || position == nSettingsEndRow) {
                 return TYPE_SHADOW;
             } else if (position == chatRow || position == generalRow || position == passcodeRow || position == experimentRow || position == turboRow || position == translatorRow ||
                     position == importSettingsRow || position == exportSettingsRow || position == resetSettingsRow || position == appRestartRow ||
