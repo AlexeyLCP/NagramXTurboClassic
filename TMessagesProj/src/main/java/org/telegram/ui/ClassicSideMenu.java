@@ -27,6 +27,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.DrawerLayoutContainer;
+import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
@@ -137,6 +138,7 @@ public final class ClassicSideMenu {
             }));
         }
         gap(list);
+        list.addView(row(activity, R.drawable.msg_list, getString(R.string.HideBottomNavigationBar), () -> toggle(activity)));
         boolean dark = Theme.isCurrentThemeDark();
         list.addView(row(activity, dark ? R.drawable.menu_day_mode_24 : R.drawable.menu_night_mode_24, getString(dark ? R.string.SwitchThemeToDay : R.string.SwitchThemeToNight), () -> {
             close(activity);
@@ -146,6 +148,21 @@ public final class ClassicSideMenu {
             close(activity);
             activity.presentFragment(new SettingsActivity());
         }));
+    }
+
+    public static void toggle(LaunchActivity activity) {
+        if (activity == null) {
+            return;
+        }
+        close(activity);
+        NaConfig.INSTANCE.getHideBottomNavigationBar().toggleConfigBool();
+        attach(activity);
+        if (activity.drawerLayoutContainer != null) {
+            INavigationLayout layout = activity.drawerLayoutContainer.getParentActionBarLayout();
+            if (layout != null) {
+                layout.rebuildFragments(0);
+            }
+        }
     }
 
     private static void openChannel(LaunchActivity activity) {

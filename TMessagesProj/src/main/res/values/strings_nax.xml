@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="NagramX" translatable="false">Nagram X Turbo</string>
+    <string name="NagramX" translatable="false">Nagram Classic</string>
     <string name="XChannel">Nagram X Turbo Channel</string>
     <string name="EnableSaveDeletedMessages">Save Deleted Messages</string>
     <string name="DeletedMessages">Deleted Messages</string>
@@ -339,7 +339,7 @@
     <string name="StickerSavedHint">Sticker saved to gallery.</string>
     <string name="StickerCopied">Sticker copied to clipboard.</string>
     <string name="StrokeOnViews">Glare effects</string>
-    <string name="HideBottomNavigationBar">Hide Bottom Navigation Bar</string>
+    <string name="HideBottomNavigationBar">Side menu</string>
     <string name="AccDescrForwardAuthor">Toggle forward author name</string>
     <string name="AccDescrForwardCaption">Toggle forward caption</string>
     <string name="AccDescrForwardSound">Toggle notification sound</string>

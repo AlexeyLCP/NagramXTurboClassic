@@ -73,6 +73,10 @@ public class DrawerLayoutContainer extends FrameLayout {
         parentActionBarLayout = layout;
     }
 
+    public INavigationLayout getParentActionBarLayout() {
+        return parentActionBarLayout;
+    }
+
     public void setActionBarLayout(ActionBarLayout actionBarLayout) {
         this.actionBarLayout = actionBarLayout;
     }

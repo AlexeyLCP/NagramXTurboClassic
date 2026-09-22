@@ -13957,6 +13957,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         });
                     });
             io.addGap();
+            io.addChecked(hideBottomNavigationBar, R.drawable.msg_list, getString(R.string.HideBottomNavigationBar), () -> {
+                if (getParentActivity() instanceof LaunchActivity) {
+                    ClassicSideMenu.toggle((LaunchActivity) getParentActivity());
+                }
+            });
             if (hideBottomNavigationBar) {
                 io.add(R.drawable.left_status_profile, getString(R.string.MyProfile), () -> {
                     Bundle args = new Bundle();
