@@ -5573,6 +5573,9 @@ public class ArticleViewer extends IArticleViewer implements NotificationCenter.
         if (parentActivity == null || sheet == null && isVisible && !collapsed) {
             return false;
         }
+        if (webUrl != null && Browser.tryOpenProxyLink(parentActivity, Uri.parse(webUrl))) {
+            return true;
+        }
 
         if (parentFragment != null && parentFragment.getParentLayout() instanceof ActionBarLayout) {
             AndroidUtilities.hideKeyboard((ActionBarLayout) parentFragment.getParentLayout());

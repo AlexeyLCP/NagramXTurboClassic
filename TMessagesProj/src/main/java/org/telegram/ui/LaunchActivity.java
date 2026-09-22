@@ -2032,6 +2032,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                                         String path = data.getPath();
                                         if (path != null && path.length() > 1) {
                                             path = path.substring(1);
+                                            if (path.equalsIgnoreCase("proxy") || path.equalsIgnoreCase("socks") || path.equalsIgnoreCase("webproxy")) {
+                                                if (AndroidUtilities.handleProxyIntent(this, intent, true)) {
+                                                    return true;
+                                                }
+                                            }
                                             if (path.startsWith("$")) {
                                                 inputInvoiceSlug = path.substring(1);
                                             } else if (path.startsWith("invoice/")) {

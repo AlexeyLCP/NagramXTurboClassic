@@ -41,6 +41,7 @@ import org.telegram.messenger.support.customtabs.CustomTabsSession;
 import org.telegram.messenger.support.customtabsclient.shared.CustomTabsHelper;
 import org.telegram.messenger.support.customtabsclient.shared.ServiceConnection;
 import org.telegram.messenger.support.customtabsclient.shared.ServiceConnectionCallback;
+import org.telegram.proxy.ProxySettings;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_account;
@@ -288,8 +289,34 @@ public class Browser {
         openUrl(context, uri, allowCustom, tryTelegraph, false, inCaseLoading, null, false, true, false);
     }
 
+    public static boolean tryOpenProxyLink(Context context, Uri uri) {
+        try {
+            ProxySettings settings = ProxySettings.fromUri(uri);
+            if (settings == null || !settings.isValid()) {
+                return false;
+            }
+            Activity activity = AndroidUtilities.findActivity(context);
+            if (activity == null) {
+                activity = org.telegram.ui.LaunchActivity.instance;
+            }
+            if (activity == null) {
+                return false;
+            }
+            AndroidUtilities.showProxyAlert(activity, settings);
+            return true;
+        } catch (Exception ignore) {
+            return false;
+        }
+    }
+
     public static void openUrl(final Context context, Uri uri, boolean _allowCustom, boolean tryTelegraph, boolean forceNotInternalForApps, Progress inCaseLoading, String browser, boolean allowIntent, boolean allowInAppBrowser, boolean forceRequest) {
         if (context == null || uri == null) {
+            return;
+        }
+        if (tryOpenProxyLink(context, uri)) {
+            if (inCaseLoading != null) {
+                inCaseLoading.end();
+            }
             return;
         }
         final int currentAccount = UserConfig.selectedAccount;
@@ -484,6 +511,9 @@ public class Browser {
     }
 
     public static boolean openInTelegramBrowser(Context context, String url, Browser.Progress progress) {
+        if (url != null && tryOpenProxyLink(context, Uri.parse(url))) {
+            return true;
+        }
         if (LaunchActivity.instance != null) {
             BottomSheetTabs tabs = LaunchActivity.instance.getBottomSheetTabs();
             if (tabs != null && tabs.tryReopenTab(url) != null) {

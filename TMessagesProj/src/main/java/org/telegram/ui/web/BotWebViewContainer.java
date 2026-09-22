@@ -4256,6 +4256,9 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     if (url == null) return false;
                     Uri uriNew = Uri.parse(url);
+                    if (Browser.tryOpenProxyLink(context, uriNew)) {
+                        return true;
+                    }
                     if (url.trim().startsWith("sms:")) {
                         return false;
                     }
