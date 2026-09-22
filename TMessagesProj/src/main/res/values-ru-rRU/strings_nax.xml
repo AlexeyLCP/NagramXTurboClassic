@@ -326,6 +326,16 @@
     <string name="StickerCopied">Стикер скопирован в буфер обмена.</string>
     <string name="StrokeOnViews">Эффекты бликов</string>
     <string name="HideBottomNavigationBar">Боковое меню</string>
+    <string name="NewGroup">Новая группа</string>
+    <string name="NewChannel">Новый канал</string>
+    <string name="Contacts">Контакты</string>
+    <string name="Calls">Звонки</string>
+    <string name="SavedMessages">Избранное</string>
+    <string name="Settings">Настройки</string>
+    <string name="MyProfile">Мой профиль</string>
+    <string name="ArchivedChats">Архив</string>
+    <string name="SwitchThemeToDay">Дневной режим</string>
+    <string name="SwitchThemeToNight">Ночной режим</string>
     <string name="AccDescrForwardAuthor">Переключить имя автора пересылки</string>
     <string name="AccDescrForwardCaption">Переключить подпись пересылки</string>
     <string name="AccDescrForwardSound">Переключить звук уведомлений</string>
