@@ -3637,6 +3637,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     }
                     return false;
                 });
+                if (NaConfig.INSTANCE.getHideBottomNavigationBar().Bool()) {
+                    actionBar.setBackButtonDrawable(new MenuDrawable());
+                }
                 updateStatus(UserConfig.getInstance(currentAccount).getCurrentUser(), false);
             }
             if (folderId == 0) {
@@ -4041,6 +4044,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                     } else if (onlySelect || folderId != 0 || communityId != 0) {
                         finishFragment();
+                    } else if (NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() && parentLayout != null && parentLayout.getDrawerLayoutContainer() != null) {
+                        parentLayout.getDrawerLayoutContainer().openDrawer(false);
                     }
                 } else if (id == 1) {
                     if (getParentActivity() == null) {

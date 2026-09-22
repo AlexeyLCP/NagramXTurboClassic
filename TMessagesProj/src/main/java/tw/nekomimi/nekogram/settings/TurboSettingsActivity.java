@@ -63,6 +63,7 @@ import org.telegram.ui.Components.blur3.source.BlurredBackgroundSource;
 import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceColor;
 import org.telegram.ui.Components.blur3.source.BlurredBackgroundSourceWrapped;
 import org.telegram.ui.Components.chat.WallpaperBitmapProvider;
+import org.telegram.ui.ClassicSideMenu;
 import org.telegram.ui.Components.ActionButtonStyle;
 import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.LauncherIconController;
@@ -116,6 +117,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     private final AbstractConfigCell notificationPreviewRow = cellGroup.appendCell(new ConfigCellCustom("NotificationPreview", ConfigCellCustom.CUSTOM_ITEM_NotificationPreview, true));
     private final AbstractConfigCell notificationMarksRow = cellGroup.appendCell(new ConfigCellCustom("NotificationMarksPicker", ConfigCellCustom.CUSTOM_ITEM_NotificationMarksPicker, true));
     private final AbstractConfigCell dividerAppIcon = cellGroup.appendCell(new ConfigCellDivider());
+    private final AbstractConfigCell hideBottomBarRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getHideBottomNavigationBar()));
+    private final AbstractConfigCell dividerNav = cellGroup.appendCell(new ConfigCellDivider());
     private AppIconsSelectorCell appIconsSelectorCell;
     private NotificationPreviewCell notificationPreviewCell;
     private NotificationMarksCell notificationMarksCell;
@@ -309,6 +312,14 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             }
             if (key.equals(NaConfig.INSTANCE.getShowDateInBubble().getKey())) {
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.reloadInterface);
+            }
+            if (key.equals(NaConfig.INSTANCE.getHideBottomNavigationBar().getKey())) {
+                if (LaunchActivity.instance != null) {
+                    ClassicSideMenu.attach(LaunchActivity.instance);
+                }
+                if (parentLayout != null) {
+                    parentLayout.rebuildFragments(0);
+                }
             }
             if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
                 boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();

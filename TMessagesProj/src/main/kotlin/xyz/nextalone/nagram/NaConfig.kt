@@ -1567,7 +1567,7 @@ object NaConfig {
         addConfig(
             "HideBottomNavigationBar",
             ConfigItem.configTypeBool,
-            false
+            true
         )
     val hideDialogsSearchField =
         addConfig(

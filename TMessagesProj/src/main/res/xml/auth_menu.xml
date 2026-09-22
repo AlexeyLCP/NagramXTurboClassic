@@ -6,7 +6,7 @@
         android:title="@string/AccountSettingsNax"
         android:summary="">
         <intent android:action="org.telegram.messenger.OPEN_ACCOUNT"
-            android:targetPackage="nu.gpu.nagramxturbo"
+            android:targetPackage="nu.gpu.nagramxturboclassic"
             android:targetClass="org.telegram.ui.LaunchActivity"/>
     </PreferenceScreen>
 </PreferenceScreen>

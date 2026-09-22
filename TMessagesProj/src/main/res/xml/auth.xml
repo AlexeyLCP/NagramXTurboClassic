@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="nu.gpu.nagramxturbo"
+    android:accountType="nu.gpu.nagramxturboclassic"
     android:icon="@mipmap/ic_launcher_turbo"
     android:smallIcon="@mipmap/ic_launcher_turbo"
     android:label="@string/AppName"
